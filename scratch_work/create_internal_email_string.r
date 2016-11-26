@@ -6,4 +6,4 @@ gloo_internal_emails <-
     )
   )
 
-# devtools::
+devtools::use_data(gloo_internal_emails, overwrite = T)
