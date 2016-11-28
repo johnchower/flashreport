@@ -7,3 +7,8 @@
 #'
 #' @format A length-one character vector.
 "pa_classes"
+
+#' A list of strings containing all query prototypes.
+#'
+#' @format A list of strings
+"query_prototype_list"

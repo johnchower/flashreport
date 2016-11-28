@@ -145,5 +145,5 @@ dbSendQuery(redshift_connection$con,
 )
 
 dbGetQuery(redshift_connection$con, "
-  select * from user_flash_cat;
+  select * from user_flash_cat limit 10;
 ")
