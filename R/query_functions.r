@@ -131,7 +131,7 @@ setMethod("run_query"
 #'
 #' @param frq An object that inherits from FlashReportQuery.
 #' @return A FlashReportQuery object of the same subtype that was input. The
-#' final_results slot contains a data.frame with columns (user_group, pa_group,
+#' final_results slot contains a data.frame with columns (user_group,
 #' date_range, variable, value).
 #' @importFrom magrittr %>%
 format_raw_results <- function(frq) 0
@@ -143,10 +143,9 @@ setMethod("format_raw_results"
             finals <- frq@raw_results %>%
               dplyr::rename(user_group = flash_report_category
                             , value = count) %>%
-              dplyr::mutate(pa_group = "Connect"
-                            , variable = "active_users"
+              dplyr::mutate(variable = "active_users"
                             , date_range = paste(frq@min_date, "_", frq@max_date) ) %>%
-              dplyr::select(user_group, pa_group, date_range, variable, value)
+              dplyr::select(user_group, date_range, variable, value)
             frq@final_results <- finals
             return(frq) 
           })
@@ -156,11 +155,10 @@ setMethod("format_raw_results"
           , definition = function(frq){
             finals <- frq@raw_results %>%
               dplyr::rename(user_group = user_cat
-                            , pa_group = pa_cat
                             , value = count) %>%
-              dplyr::mutate(variable = "platform_actions"
+              dplyr::mutate(variable = pa_cat
                             , date_range = paste(frq@min_date, "_", frq@max_date) ) %>%
-              dplyr::select(user_group, pa_group, date_range, variable, value)
+              dplyr::select(user_group, date_range, variable, value)
             frq@final_results <- finals
             return(frq) 
           })
@@ -172,9 +170,8 @@ setMethod("format_raw_results"
               dplyr::rename(user_group = user_cat
                             , variable = status
                             , value = count) %>%
-              dplyr::mutate(pa_group = "Connect"
-                            , date_range = paste(frq@min_date, "_", frq@max_date) ) %>%
-              dplyr::select(user_group, pa_group, date_range, variable, value)
+              dplyr::mutate(date_range = paste(frq@min_date, "_", frq@max_date) ) %>%
+              dplyr::select(user_group, date_range, variable, value)
             frq@final_results <- finals
             return(frq) 
           })

@@ -2,148 +2,102 @@ glootility::connect_to_redshift()
 
 library(RPostgreSQL)
 library(glootility)
+library(flashreport)
+library(dplyr)
+library(reshape2)
 
 dbSendQuery(redshift_connection$con, 
-  paste0("CREATE TEMPORARY TABLE pa_flash_cat 
-            (platform_action VARCHAR 
-            , flash_report_category VARCHAR);"
-          , "INSERT INTO pa_flash_cat 
-              (platform_action, flash_report_category)
-              VALUES"
-          , flashreport::pa_classes
-          , ";"
-  )
+  query_user_flash_cat
 )
 
 dbSendQuery(redshift_connection$con,
-  paste0(
-    " CREATE TEMPORARY TABLE user_flash_cat AS
-	WITH uc_seq AS (
-	SELECT user_id
-	     , MAX(sequence_number) AS max_sequence
-	     , MIN(sequence_number) AS min_sequence
-	FROM user_connected_to_champion_bridges
-	GROUP BY user_id
-	), user_connected_to_remarkable AS(
-	SELECT 
-		u.id AS user_id
-		, sum(
-			case 
-			when c.champion_id=55 then 1
-			else 0 
-			end
-		) AS connected_to_remarkable
-	FROM user_dimensions u
-	LEFT JOIN user_connected_to_champion_bridges c
-	ON u.id=c.user_id
-	group by u.id
-	), user_internal_legit AS(
-	SELECT u.id AS user_id
-		, u.email AS user_email
-		, u.email IN" 
-    , flashreport::gloo_internal_emails
-    , "		AS legit_internal_user
-	FROM user_dimensions u
-	), user_flash_facts AS(
-	SELECT	u.id AS user_id
-		, u.email AS user_email
-		, u.account_type AS account_type
-		, c.champion_id AS first_champion_id
-		, cd.name AS first_champion_name 
-		, ucr.connected_to_remarkable=1 AS connected_to_remarkable
-		, uil.legit_internal_user
-	FROM 	user_dimensions u
-	LEFT JOIN user_connected_to_champion_bridges c
-		ON u.id=c.user_id
-	LEFT JOIN uc_seq 
-		ON uc_seq.user_id=u.id
-	LEFT JOIN champion_dimensions cd
-		ON cd.id=c.champion_id
-	LEFT JOIN user_connected_to_remarkable ucr
-		ON ucr.user_id=u.id
-	LEFT JOIN user_internal_legit uil
-		ON uil.user_id=u.id
-	WHERE uc_seq.min_sequence=c.sequence_number
-	ORDER BY u.id
-	), ufc AS(
-	SELECT uff.user_id AS user_id
-		, (
-			case 
-			when uff.legit_internal_user 
-				AND uff.user_email IS NOT NULL
-				then 'Internal'
-			when uff.first_champion_id IN 
-				(3,4,88,20,6,26,56,39,43) 
-				AND NOT u.account_type='Internal User'
-				AND NOT uff.connected_to_remarkable
-				AND uff.user_email IS NOT NULL
-				then uff.first_champion_name
-			when uff.first_champion_id IN 
-				(5,182,34,136,45,69,95,94,93,29,83) 
-				AND NOT u.account_type='Internal User'
-				AND NOT uff.connected_to_remarkable
-				AND uff.user_email IS NOT NULL
-				then 'Cru'
-			when uff.first_champion_id IN 
-				(92,14,91,32) 
-				AND NOT u.account_type='Internal User'
-				AND NOT uff.connected_to_remarkable
-				AND uff.user_email IS NOT NULL
-				then 'CFP'
-			when uff.first_champion_id IN 
-				(2,7) 
-				AND NOT u.account_type='Internal User'
-				AND NOT uff.connected_to_remarkable
-				AND uff.user_email IS NOT NULL
-				then 'CeDAR'	
-			when uff.first_champion_id IN 
-				(37,24,42) 
-				AND NOT u.account_type='Internal User'
-				AND NOT uff.connected_to_remarkable
-				AND uff.user_email IS NOT NULL
-				then 'Date Night'	
-			when uff.first_champion_id IN 
-				(11,23,98) 
-				AND NOT u.account_type='Internal User'
-				AND NOT uff.connected_to_remarkable
-				AND uff.user_email IS NOT NULL
-				then 'TYRO'
-			when uff.connected_to_remarkable
-				AND uff.user_email IS NOT NULL
-				AND NOT u.account_type='Internal User'
-				then 'Remarkable!'
-			when uff.first_champion_id NOT IN 
-				(1,2,3,4,5
-				,6,7,9,11,13
-				,14,20,23,24,26
-				,29,31,32,34,43
-				,44,45,53,55,56
-				,69,83,88,91,92
-				,93,94,95,98,108
-				,128,130,132,136,137
-				,77,57,54,51,50
-				,81,78,65,171,18
-				,79,41,16,33,17
-				,113,116,115,48,152
-				,147,47,39) 
-				AND NOT u.account_type='Internal User'
-				AND NOT uff.connected_to_remarkable
-				AND uff.user_email IS NOT NULL
-				then 'Other'
-			when uff.user_email IS NULL
-				then 'Guest'
-			else 'Uncategorized' 
-			end
-		) AS flash_report_category
-	FROM user_flash_facts uff
-	LEFT JOIN user_dimensions u
-		ON u.id=uff.user_id
-	)
-		select * from ufc
-        ;"
-  )
+  query_pa_flash_cat
 )
 
-dbGetQuery(redshift_connection$con, "
-  select * from user_flash_cat limit 10;
-")
+run_date <- as.Date('2016-11-25')
+weeks_back <- c(1,2,4,6)
+start_dates <- run_date - 7*weeks_back
+end_dates <- start_dates + 6
+year_beginning <- as.Date('2016-01-01')
+
+date_ranges <- data.frame(
+  names = c(paste0('wk', weeks_back),
+             paste0('ytd', weeks_back))
+  , range_beginning = c(start_dates
+                       , rep(year_beginning, times = length(weeks_back)))
+  , range_ending  = rep(end_dates, times = 2)
+  , stringsAsFactors = F
+)
+
+query_types <- paste0(c('au', 'pa', 'notifications'), 'Query')
+
+long_flash_report <- data.frame()
+for(i in 1:nrow(date_ranges)){
+  for(queryType in query_types){
+    range_i <- date_ranges[i,]
+    minDate <- range_i$range_beginning
+    maxDate <- range_i$range_ending
+    FRQ <- new(Class = queryType
+               , min_date = minDate
+               , max_date = maxDate)
+    results <- FRQ %>%
+      get_prototype %>%
+      substitute_dates %>%
+      run_query %>%
+      format_raw_results %>%
+      {.@final_results}
+    long_flash_report <- rbind(long_flash_report, results)
+  }
+}
+
+short_flash_report <- long_flash_report %>%
+  dcast(user_group ~ date_range + variable, value.var = 'value')
+
+end_dates <- seq.Date(from = as.Date('2016-01-07')
+                      , to = as.Date('2016-11-24')
+                      , by = 7)
+week_start_dates <- end_dates - 6
+
+yearly_WAU_pcts <- data.frame()
+for(i in 1:length(end_dates)){
+  endDate <- end_dates[i]
+  weekStartDate <- week_start_dates[i]
+
+  week_query <- new("auQuery"
+                    , min_date = weekStartDate
+                    , max_date = endDate)
+
+  year_query <- new("auQuery"
+                    , min_date = year_beginning
+                    , max_date = endDate)
+
+  WAU_count <- week_query %>%
+      get_prototype %>%
+      substitute_dates %>%
+      run_query %>%
+      format_raw_results %>%
+      {.@final_results} %>%
+      filter(!is.na(user_group)
+             , user_group != "Uncategorized"
+             , user_group != "Guest") %>%
+      {.$value} %>%
+      sum
+
+  AU_count <- year_query %>%
+      get_prototype %>%
+      substitute_dates %>%
+      run_query %>%
+      format_raw_results %>%
+      {.@final_results} %>%
+      filter(!is.na(user_group)
+             , user_group != "Uncategorized"
+             , user_group != "Guest") %>%
+      {.$value} %>%
+      sum
+  result <- data.frame(WAU_pct = WAU_count/AU_count
+                       , end_date = endDate
+                       , stringsAsFactors = F)
+  yearly_WAU_pcts <- rbind(yearly_WAU_pcts, result)
+}    
+
+dbDisconnect(redshift_connection$con)
