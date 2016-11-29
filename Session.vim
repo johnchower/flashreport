@@ -2,11 +2,11 @@ let SessionLoad = 1
 if &cp | set nocp | endif
 let s:cpo_save=&cpo
 set cpo&vim
-inoremap <C-Space> 
-imap <Nul> <C-Space>
-inoremap <expr> <Up> pumvisible() ? "\" : "\<Up>"
-inoremap <expr> <S-Tab> pumvisible() ? "\" : "\<S-Tab>"
 inoremap <expr> <Down> pumvisible() ? "\" : "\<Down>"
+inoremap <expr> <S-Tab> pumvisible() ? "\" : "\<S-Tab>"
+inoremap <expr> <Up> pumvisible() ? "\" : "\<Up>"
+imap <Nul> <C-Space>
+inoremap <C-Space> 
 nmap v <Plug>SlimeConfig
 nmap  <Plug>SlimeParagraphSend
 xmap  <Plug>SlimeRegionSend
@@ -58,10 +58,10 @@ set showmatch
 set softtabstop=2
 set splitbelow
 set splitright
+set switchbuf=useopen,usetab
 set textwidth=79
 set updatetime=2000
 set wildmenu
-set window=53
 let s:so_save = &so | let s:siso_save = &siso | set so=0 siso=0
 let v:this_session=expand("<sfile>:p")
 silent only
@@ -70,15 +70,18 @@ if expand('%') == '' && !&modified && line('$') <= 1 && getline(1) == ''
   let s:wipebuf = bufnr('%')
 endif
 set shortmess=aoO
-badd +1 scratch_work/report_by_SQL_draft.r
-badd +34 R/query_functions.r
-badd +0 R_doc
+badd +6 scratch_work/report_by_SQL_draft.r
+badd +56 R/query_functions.r
 badd +4 NAMESPACE
-badd +12 DESCRIPTION
+badd +2 DESCRIPTION
+badd +52 scratch_work/define_query_prototypes.r
+badd +14 R/data_doc.r
+badd +142 scratch_work/define_temp_tables.r
+badd +0 R_doc
 argglobal
 silent! argdel *
 set stal=2
-edit R/query_functions.r
+edit scratch_work/report_by_SQL_draft.r
 set splitbelow splitright
 wincmd t
 set winheight=1 winwidth=1
@@ -165,23 +168,8 @@ nnoremap <buffer> <silent> \rr :call RClearConsole()
 onoremap <buffer> <silent> \rr :call RClearConsole()
 nnoremap <buffer> <silent> \rl :call g:SendCmdToR("ls()")
 onoremap <buffer> <silent> \rl :call g:SendCmdToR("ls()")
-let s:cpo_save=&cpo
-set cpo&vim
-noremap <buffer> <silent> \r<Right> :call RSendPartOfLine("right", 0)
-noremap <buffer> <silent> \r<Left> :call RSendPartOfLine("left", 0)
 nnoremap <buffer> <silent> \o :call SendLineToRAndInsertOutput()0
 onoremap <buffer> <silent> \o :call SendLineToRAndInsertOutput()0
-noremap <buffer> <silent> \d :call SendLineToR("down")0
-noremap <buffer> <silent> \l :call SendLineToR("stay")
-noremap <buffer> <silent> \pa :call SendParagraphToR("echo", "down")
-noremap <buffer> <silent> \pd :call SendParagraphToR("silent", "down")
-noremap <buffer> <silent> \pe :call SendParagraphToR("echo", "stay")
-noremap <buffer> <silent> \pp :call SendParagraphToR("silent", "stay")
-vnoremap <buffer> <silent> \so :call SendSelectionToR("echo", "stay", "NewtabInsert")
-vnoremap <buffer> <silent> \sa :call SendSelectionToR("echo", "down")
-vnoremap <buffer> <silent> \sd :call SendSelectionToR("silent", "down")
-vnoremap <buffer> <silent> \se :call SendSelectionToR("echo", "stay")
-vnoremap <buffer> <silent> \ss :call SendSelectionToR("silent", "stay")
 nnoremap <buffer> <silent> \fa :call SendFunctionToR("echo", "down")
 onoremap <buffer> <silent> \fa :call SendFunctionToR("echo", "down")
 nnoremap <buffer> <silent> \fd :call SendFunctionToR("silent", "down")
@@ -190,14 +178,6 @@ nnoremap <buffer> <silent> \fe :call SendFunctionToR("echo", "stay")
 onoremap <buffer> <silent> \fe :call SendFunctionToR("echo", "stay")
 nnoremap <buffer> <silent> \ff :call SendFunctionToR("silent", "stay")
 onoremap <buffer> <silent> \ff :call SendFunctionToR("silent", "stay")
-noremap <buffer> <silent> \ba :call SendMBlockToR("echo", "down")
-noremap <buffer> <silent> \bd :call SendMBlockToR("silent", "down")
-noremap <buffer> <silent> \be :call SendMBlockToR("echo", "stay")
-noremap <buffer> <silent> \bb :call SendMBlockToR("silent", "stay")
-noremap <buffer> <silent> \ks :call RSpin()
-noremap <buffer> <silent> \ao :call ShowRout()
-noremap <buffer> <silent> \ae :call SendFileToR("echo")
-noremap <buffer> <silent> \aa :call SendFileToR("silent")
 nnoremap <buffer> <silent> \; :call MovePosRCodeComment("normal")
 onoremap <buffer> <silent> \; :call MovePosRCodeComment("normal")
 nnoremap <buffer> <silent> \xu :call RSimpleCommentLine("normal", "u")
@@ -214,6 +194,29 @@ nnoremap <buffer> <silent> \rc :call StartR("custom")
 onoremap <buffer> <silent> \rc :call StartR("custom")
 nnoremap <buffer> <silent> \rf :call StartR("R")
 onoremap <buffer> <silent> \rf :call StartR("R")
+let s:cpo_save=&cpo
+set cpo&vim
+noremap <buffer> <silent> \r<Right> :call RSendPartOfLine("right", 0)
+noremap <buffer> <silent> \r<Left> :call RSendPartOfLine("left", 0)
+noremap <buffer> <silent> \d :call SendLineToR("down")0
+noremap <buffer> <silent> \l :call SendLineToR("stay")
+noremap <buffer> <silent> \pa :call SendParagraphToR("echo", "down")
+noremap <buffer> <silent> \pd :call SendParagraphToR("silent", "down")
+noremap <buffer> <silent> \pe :call SendParagraphToR("echo", "stay")
+noremap <buffer> <silent> \pp :call SendParagraphToR("silent", "stay")
+vnoremap <buffer> <silent> \so :call SendSelectionToR("echo", "stay", "NewtabInsert")
+vnoremap <buffer> <silent> \sa :call SendSelectionToR("echo", "down")
+vnoremap <buffer> <silent> \sd :call SendSelectionToR("silent", "down")
+vnoremap <buffer> <silent> \se :call SendSelectionToR("echo", "stay")
+vnoremap <buffer> <silent> \ss :call SendSelectionToR("silent", "stay")
+noremap <buffer> <silent> \ba :call SendMBlockToR("echo", "down")
+noremap <buffer> <silent> \bd :call SendMBlockToR("silent", "down")
+noremap <buffer> <silent> \be :call SendMBlockToR("echo", "stay")
+noremap <buffer> <silent> \bb :call SendMBlockToR("silent", "stay")
+noremap <buffer> <silent> \ks :call RSpin()
+noremap <buffer> <silent> \ao :call ShowRout()
+noremap <buffer> <silent> \ae :call SendFileToR("echo")
+noremap <buffer> <silent> \aa :call SendFileToR("silent")
 inoremap <buffer> <silent>  =RCompleteArgs()
 inoremap <buffer> <silent> _ :call ReplaceUnderS()a
 let &cpo=s:cpo_save
@@ -329,12 +332,12 @@ setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 1 - ((0 * winheight(0) + 26) / 52)
+let s:l = 103 - ((51 * winheight(0) + 26) / 52)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-1
-normal! 0
+103
+normal! 037|
 tabnew
 set splitbelow splitright
 wincmd t

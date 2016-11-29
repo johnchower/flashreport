@@ -13,7 +13,7 @@ format_raw_results(frq)
 }
 \value{
 A FlashReportQuery object of the same subtype that was input. The
-final_results slot contains a data.frame with columns (user_group, pa_group,
+final_results slot contains a data.frame with columns (user_group,
 date_range, variable, value).
 }
 \description{

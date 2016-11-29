@@ -37,6 +37,9 @@ for(i in 1:nrow(date_ranges)){
     range_i <- date_ranges[i,]
     minDate <- range_i$range_beginning
     maxDate <- range_i$range_ending
+    range_type <- ifelse(as.numeric(maxDate - minDate) == 6 
+                         , 'week'
+                         , 'ytd')
     FRQ <- new(Class = queryType
                , min_date = minDate
                , max_date = maxDate)
@@ -46,6 +49,7 @@ for(i in 1:nrow(date_ranges)){
       run_query %>%
       format_raw_results %>%
       {.@final_results}
+    
     long_flash_report <- rbind(long_flash_report, results)
   }
 }

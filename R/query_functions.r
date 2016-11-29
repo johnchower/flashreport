@@ -25,34 +25,55 @@ setClass(
 
 #' An S4 class to represent an 'active users' Flash Report query.
 #'
-#' @slot dummy A dummy slot to differentiate this class from the
-#' FlashReportQuery class.
+#' @slot range_type A character indicating whether to use a year-to-date range
+#' 'ytd', or a weekly range, 'week'.
 setClass(
   Class = "auQuery"
-  , slots = c(dummy = "character")
+  , slots = c(range_type = "character")
   , contains = "FlashReportQuery"
 )
 
 #' An S4 class to represent a 'platform action' Flash Report query.
 #'
-#' @slot dummy A dummy slot to differentiate this class from the
-#' FlashReportQuery class.
+#' @slot range_type A character indicating whether to use a year-to-date range
+#' 'ytd', or a weekly range, 'week'.
 setClass(
   Class = "paQuery"
-  , slots = c(dummy = "character")
+  , slots = c(range_type = "character")
   , contains = "FlashReportQuery"
 )
 
 
 #' An S4 class to represent a 'notifications' Flash Report query.
 #'
-#' @slot dummy A dummy slot to differentiate this class from the
-#' FlashReportQuery class.
+#' @slot range_type A character indicating whether to use a year-to-date range
+#' 'ytd', or a weekly range, 'week'.
 setClass(
   Class = "notificationsQuery"
-  , slots = c(dummy = "character")
+  , slots = c(range_type = "character")
   , contains = "FlashReportQuery"
 )
+
+#' A generic function to generate the correct min_date given the max_date and
+#' range_type of an object that inherits from FlashReportQuery.
+#'
+#' @param frq An object that inherits from FlashReportQuery.
+#' @return A FlashReportQuery object of the same subtype that was input.
+get_min_date <- function(frq) 0
+setGeneric("get_min_date")
+
+setMethod("get_min_date"
+          , signature(frq = "FlashReportQuery")
+          , definition = function(frq){
+            if(frq@range_type == 'wk'){
+              minDate <- frq@max_date - 6
+            } else {
+              minDate <- as.Date('2016-01-01')
+            }
+            frq@min_date <- minDate
+            return(frq)
+          }
+)                     
 
 #' A generic function to grab the correct query prototype and stick it into the
 #' query_prototype slot of a FlashReport query.
@@ -65,21 +86,24 @@ setGeneric("get_prototype")
 setMethod("get_prototype"
           , signature(frq = "auQuery")
           , definition = function(frq){
-            frq@query_prototype <- flashreport::query_prototype_list$auPrototype
+            frq@query_prototype <- 
+              flashreport::query_prototype_list$auPrototype
             return(frq)
           })
 
 setMethod("get_prototype"
           , signature(frq = "paQuery")
           , definition = function(frq){
-            frq@query_prototype <- flashreport::query_prototype_list$paPrototype
+            frq@query_prototype <- 
+              flashreport::query_prototype_list$paPrototype
             return(frq)
           })
 
 setMethod("get_prototype"
           , signature(frq = "notificationsQuery")
           , definition = function(frq){
-            frq@query_prototype <- flashreport::query_prototype_list$notificationsPrototype
+            frq@query_prototype <- 
+              flashreport::query_prototype_list$notificationsPrototype
             return(frq)
           })
 
@@ -143,8 +167,10 @@ setMethod("format_raw_results"
             finals <- frq@raw_results %>%
               dplyr::rename(user_group = flash_report_category
                             , value = count) %>%
-              dplyr::mutate(variable = "active_users"
-                            , date_range = paste(frq@min_date, "_", frq@max_date) ) %>%
+              dplyr::mutate(
+                variable = paste0("active_users_", frq@range_type)
+                , date_range = frq@max_date
+              ) %>%
               dplyr::select(user_group, date_range, variable, value)
             frq@final_results <- finals
             return(frq) 
@@ -156,11 +182,15 @@ setMethod("format_raw_results"
             finals <- frq@raw_results %>%
               dplyr::rename(user_group = user_cat
                             , value = count) %>%
-              dplyr::mutate(variable = pa_cat
-                            , date_range = paste(frq@min_date, "_", frq@max_date) ) %>%
+              dplyr::mutate(
+                variable = paste0("platform_actions_", pa_cat)
+                , date_range = frq@max_date 
+              ) %>%
               dplyr::select(user_group, date_range, variable, value)
             frq@final_results <- finals
-            return(frq) 
+            if(frq@range_type == 'week'){
+              return(frq) 
+            } else { return(data.frame())}
           })
 
 setMethod("format_raw_results"
@@ -168,10 +198,12 @@ setMethod("format_raw_results"
           , definition = function(frq){
             finals <- frq@raw_results %>%
               dplyr::rename(user_group = user_cat
-                            , variable = status
+                            , variable = paste0("notifications_", status)
                             , value = count) %>%
-              dplyr::mutate(date_range = paste(frq@min_date, "_", frq@max_date) ) %>%
+              dplyr::mutate(date_range = frq@max_date) %>%
               dplyr::select(user_group, date_range, variable, value)
             frq@final_results <- finals
-            return(frq) 
+            if(frq@range_type == 'week'){
+              return(frq) 
+            } else { return(data.frame())}
           })

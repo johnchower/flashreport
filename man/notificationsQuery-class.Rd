@@ -10,7 +10,7 @@ An S4 class to represent a 'notifications' Flash Report query.
 \section{Slots}{
 
 \describe{
-\item{\code{dummy}}{A dummy slot to differentiate this class from the
-FlashReportQuery class.}
+\item{\code{range_type}}{A character indicating whether to use a year-to-date range
+'ytd', or a weekly range, 'week'.}
 }}
 

@@ -12,3 +12,15 @@
 #'
 #' @format A list of strings
 "query_prototype_list"
+
+#' A generic query to create a temporary table in Redshift that matches users
+#' to their Flash Report Categories.
+#'
+#' @format string
+"query_user_flash_cat"
+
+#' A generic query to create a temporary table in Redshift that matches
+#' platform actions to their Flash Report Categories.
+#'
+#' @format string
+"query_pa_flash_cat"
