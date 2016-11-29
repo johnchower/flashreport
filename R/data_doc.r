@@ -8,6 +8,11 @@
 #' @format A length-one character vector.
 "pa_classes"
 
+#' A string containing all (user_group, subaggregate) pairs.
+#'
+#' @format A length-one character vector.
+"subaggregates"
+
 #' A list of strings containing all query prototypes.
 #'
 #' @format A list of strings

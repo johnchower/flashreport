@@ -21,6 +21,7 @@ setClass(
       , raw_results = "data.frame"
       , final_results = "data.frame"
     )
+  , prototype = list(min_date = as.Date('2016-01-01'))
 )
 
 #' An S4 class to represent an 'active users' Flash Report query.
@@ -65,7 +66,7 @@ setGeneric("get_min_date")
 setMethod("get_min_date"
           , signature(frq = "FlashReportQuery")
           , definition = function(frq){
-            if(frq@range_type == 'wk'){
+            if(frq@range_type == 'week'){
               minDate <- frq@max_date - 6
             } else {
               minDate <- as.Date('2016-01-01')
@@ -190,7 +191,10 @@ setMethod("format_raw_results"
             frq@final_results <- finals
             if(frq@range_type == 'week'){
               return(frq) 
-            } else { return(data.frame())}
+            } else { 
+              frq@final_results <- data.frame()
+              return(frq) 
+            }
           })
 
 setMethod("format_raw_results"
@@ -198,12 +202,17 @@ setMethod("format_raw_results"
           , definition = function(frq){
             finals <- frq@raw_results %>%
               dplyr::rename(user_group = user_cat
-                            , variable = paste0("notifications_", status)
                             , value = count) %>%
-              dplyr::mutate(date_range = frq@max_date) %>%
+              dplyr::mutate(
+                date_range = frq@max_date
+                , variable = paste0("notifications_", status)
+              ) %>%
               dplyr::select(user_group, date_range, variable, value)
             frq@final_results <- finals
             if(frq@range_type == 'week'){
               return(frq) 
-            } else { return(data.frame())}
+            } else { 
+              frq@final_results <- data.frame()
+              return(frq) 
+            }
           })
