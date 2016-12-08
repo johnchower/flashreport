@@ -33,15 +33,17 @@ notification_query_prototype <-
 "
 /* Count Notifications */
 select ufc.flash_report_category as user_cat
-	, nef.status
+	, nd.status
 	, count (distinct nef.id)
 from notification_event_facts nef
 left join user_flash_cat ufc
 	on ufc.user_id=nef.user_id
+left join notification_dimensions nd
+  on nd.id = nef.notification_id
 where nef.date_id>=min_date_xyz
 	and nef.date_id<=max_date_xyz
-group by ufc.flash_report_category, nef.status
-order by ufc.flash_report_category, nef.status
+group by ufc.flash_report_category, nd.status
+order by ufc.flash_report_category, nd.status
 ;
 "
 query_prototype_list <- list(
