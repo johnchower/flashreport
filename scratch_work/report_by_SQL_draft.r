@@ -1,4 +1,5 @@
 starttime <- Sys.time()
+devtools::load_all()
 glootility::connect_to_redshift()
 
 library(RPostgreSQL)
@@ -19,7 +20,7 @@ dbSendQuery(redshift_connection$con,
 #   query_subaggregates 
 # )
 
-run_date <- as.Date('2016-12-02')
+run_date <- as.Date('2016-12-09')
 weeks_back <- 1:46
 start_dates <- run_date - 7*weeks_back
 end_dates <- start_dates + 6
@@ -57,7 +58,6 @@ for(i in 1:nrow(date_ranges)){
     long_flash_report <- rbind(long_flash_report, results)
   }
 }
-
 
 long_flash_report_2 <- long_flash_report %>%
   mutate(
