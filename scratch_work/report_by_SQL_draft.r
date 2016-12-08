@@ -15,12 +15,12 @@ dbSendQuery(redshift_connection$con,
   query_pa_flash_cat
 )
 
-dbSendQuery(redshift_connection$con,
-  query_subaggregates 
-)
+# dbSendQuery(redshift_connection$con,
+#   query_subaggregates 
+# )
 
-run_date <- as.Date('2016-11-25')
-weeks_back <- c(1,2,4,6)
+run_date <- as.Date('2016-12-02')
+weeks_back <- 1:46
 start_dates <- run_date - 7*weeks_back
 end_dates <- start_dates + 6
 year_beginning <- as.Date('2016-01-01')
