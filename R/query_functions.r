@@ -60,8 +60,13 @@ setClass(
 #'
 #' @param frq An object that inherits from FlashReportQuery.
 #' @return A FlashReportQuery object of the same subtype that was input.
+#' @export
+
 get_min_date <- function(frq) 0
 setGeneric("get_min_date")
+
+#' @describeIn get_min_date Get the min date of an object that inherits from
+#' FlashReportQuery which only has a max date and a range_type defined.
 
 setMethod("get_min_date"
           , signature(frq = "FlashReportQuery")
@@ -81,8 +86,12 @@ setMethod("get_min_date"
 #' 
 #' @param frq An object that inherits from FlashReportQuery.
 #' @return A FlashReportQuery object of the same subtype that was input.
+#' @export
+
 get_prototype <- function(frq) 0
 setGeneric("get_prototype")
+
+#' @describeIn get_prototype Get the query prototype for an active users query.
 
 setMethod("get_prototype"
           , signature(frq = "auQuery")
@@ -92,6 +101,8 @@ setMethod("get_prototype"
             return(frq)
           })
 
+#' @describeIn get_prototype Get the query prototype for a platform actions query.
+
 setMethod("get_prototype"
           , signature(frq = "paQuery")
           , definition = function(frq){
@@ -99,6 +110,8 @@ setMethod("get_prototype"
               flashreport::query_prototype_list$paPrototype
             return(frq)
           })
+
+#' @describeIn get_prototype Get the query prototype for a notifications query.
 
 setMethod("get_prototype"
           , signature(frq = "notificationsQuery")
@@ -113,8 +126,13 @@ setMethod("get_prototype"
 #'
 #' @param frq A FlashReportQuery object.
 #' @return A FlashReportQuery object.
+#' @export
+
 substitute_dates <- function(frq) 0
 setGeneric("substitute_dates")
+
+#' @describeIn substitute_dates Substitute the min_date and max_date slots into
+#' the query_prototype slot. Return result in the query slot.
 
 setMethod("substitute_dates"
           , signature(frq = "FlashReportQuery")
@@ -140,8 +158,16 @@ setMethod("substitute_dates"
 #' @param ... Placeholder for database connection object.
 #' @return A FlashReportQuery object.
 #' @import RPostgreSQL DBI
+#' @export
+
 run_query <- function(frq, ...) 0
 setGeneric("run_query")
+
+#' @describeIn run_query Run the query slot against the redshift database and
+#' return the results.
+#'
+#' @param con The database connection object to run the query through. Defaults
+#' to insightsdev.
 
 setMethod("run_query"
           , signature(frq = "FlashReportQuery")
@@ -159,8 +185,12 @@ setMethod("run_query"
 #' final_results slot contains a data.frame with columns (user_group,
 #' date_range, variable, value).
 #' @importFrom magrittr %>%
+#' @export
+
 format_raw_results <- function(frq) 0
 setGeneric("format_raw_results")
+
+#' @describeIn format_raw_results Format results of an Active Users query.
 
 setMethod("format_raw_results"
           , signature(frq = "auQuery")
@@ -176,6 +206,8 @@ setMethod("format_raw_results"
             frq@final_results <- finals
             return(frq) 
           })
+
+#' @describeIn format_raw_results Format results of a platform action query.
 
 setMethod("format_raw_results"
           , signature(frq = "paQuery")
@@ -196,6 +228,8 @@ setMethod("format_raw_results"
               return(frq) 
             }
           })
+
+#' @describeIn format_raw_results Format results of a notifications query.
 
 setMethod("format_raw_results"
           , signature(frq = "notificationsQuery")
