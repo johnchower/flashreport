@@ -10,6 +10,7 @@
 #' ending), variable (character), value (numeric).
 #' @importFrom magrittr %>%
 #' @importFrom methods new
+#' @export
 get_results <- function(date_ranges, query_types){
   long_flash_report <- data.frame()
   for(i in 1:nrow(date_ranges)){
