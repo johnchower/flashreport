@@ -10,10 +10,7 @@
 #' ending), variable (character), value (numeric).
 #' @importFrom magrittr %>%
 #' @importFrom methods new
-#' @export
-
 get_results <- function(date_ranges, query_types){
-
   long_flash_report <- data.frame()
   for(i in 1:nrow(date_ranges)){
     for(queryType in query_types){
@@ -43,7 +40,6 @@ get_results <- function(date_ranges, query_types){
 #' @return A data frame equivalent to the input, except that the dates are in a
 #' different format.
 #' @export
-
 format_LFR_dates <- function(long_flash_report){
   dplyr::mutate(
     long_flash_report
@@ -53,7 +49,7 @@ format_LFR_dates <- function(long_flash_report){
         )
   )
 }
-   
+
 #' Removes undesireable user groups from the final report.
 #'
 #' @param long_flash_report_dates_formatted The result of calling
@@ -62,7 +58,6 @@ format_LFR_dates <- function(long_flash_report){
 #' user_groups have been filtered out.
 #' @importFrom magrittr %>%
 #' @export
-
 curate_user_groups <- function(long_flash_report_dates_formatted){
   long_flash_report_dates_formatted %>%
     dplyr::filter(
@@ -86,7 +81,6 @@ curate_user_groups <- function(long_flash_report_dates_formatted){
 #' but fewer rows.
 #' @importFrom magrittr %>%
 #' @export
-
 summarise_by_subaggregate <- function(long_flash_report_2
                                       , subaggregate_df = flashreport::subaggregates){
   long_flash_report_2 %>%
@@ -106,7 +100,6 @@ summarise_by_subaggregate <- function(long_flash_report_2
 #' but fewer rows.
 #' @importFrom magrittr %>%
 #' @export
-
 summarise_in_aggregate <- function(long_flash_report_2){
   long_flash_report_2 %>%
     dplyr::group_by(date_range, variable) %>%
@@ -125,7 +118,6 @@ summarise_in_aggregate <- function(long_flash_report_2){
 #' additional rows corresponding to the WAU percent variable.
 #' @importFrom magrittr %>%
 #' @export
-
 calculate_WAU_percentage <- function(long_flash_report_3){
   long_flash_report_3 %>%
     dplyr::filter(grepl(pattern = "active_user", x = variable)) %>%
@@ -146,7 +138,6 @@ calculate_WAU_percentage <- function(long_flash_report_3){
 #' additional rows corresponding to the total actions variable.
 #' @importFrom magrittr %>%
 #' @export
-
 calculate_total_actions <- function(long_flash_report_3){
   long_flash_report_3 %>%
     dplyr::filter(grepl(pattern = "platform_actions", x = variable)) %>%
@@ -167,7 +158,6 @@ calculate_total_actions <- function(long_flash_report_3){
 #' additional rows corresponding to the actions_per_AU variable.
 #' @importFrom magrittr %>%
 #' @export
-
 calculate_actions_per_AU <- function(long_flash_report_3
                                      , long_flash_report_total_actions){
   rbind(long_flash_report_total_actions
@@ -193,7 +183,6 @@ calculate_actions_per_AU <- function(long_flash_report_3
 #' additional rows corresponding to the notifications_response_rate variable.
 #' @importFrom magrittr %>%
 #' @export
-
 calculate_NRR <- function(long_flash_report_3){
   long_flash_report_3 %>%
     dplyr::filter(grepl(pattern = "notifications", x = variable)) %>%

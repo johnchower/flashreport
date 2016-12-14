@@ -44,7 +44,6 @@ setClass(
   , contains = "FlashReportQuery"
 )
 
-
 #' An S4 class to represent a 'notifications' Flash Report query.
 #'
 #' @slot range_type A character indicating whether to use a year-to-date range
@@ -61,13 +60,11 @@ setClass(
 #' @param frq An object that inherits from FlashReportQuery.
 #' @return A FlashReportQuery object of the same subtype that was input.
 #' @export
-
 get_min_date <- function(frq) 0
 setGeneric("get_min_date")
 
 #' @describeIn get_min_date Get the min date of an object that inherits from
 #' FlashReportQuery which only has a max date and a range_type defined.
-
 setMethod("get_min_date"
           , signature(frq = "FlashReportQuery")
           , definition = function(frq){
@@ -87,12 +84,10 @@ setMethod("get_min_date"
 #' @param frq An object that inherits from FlashReportQuery.
 #' @return A FlashReportQuery object of the same subtype that was input.
 #' @export
-
 get_prototype <- function(frq) 0
 setGeneric("get_prototype")
 
 #' @describeIn get_prototype Get the query prototype for an active users query.
-
 setMethod("get_prototype"
           , signature(frq = "auQuery")
           , definition = function(frq){
@@ -102,7 +97,6 @@ setMethod("get_prototype"
           })
 
 #' @describeIn get_prototype Get the query prototype for a platform actions query.
-
 setMethod("get_prototype"
           , signature(frq = "paQuery")
           , definition = function(frq){
@@ -112,7 +106,6 @@ setMethod("get_prototype"
           })
 
 #' @describeIn get_prototype Get the query prototype for a notifications query.
-
 setMethod("get_prototype"
           , signature(frq = "notificationsQuery")
           , definition = function(frq){
@@ -127,13 +120,11 @@ setMethod("get_prototype"
 #' @param frq A FlashReportQuery object.
 #' @return A FlashReportQuery object.
 #' @export
-
 substitute_dates <- function(frq) 0
 setGeneric("substitute_dates")
 
 #' @describeIn substitute_dates Substitute the min_date and max_date slots into
 #' the query_prototype slot. Return result in the query slot.
-
 setMethod("substitute_dates"
           , signature(frq = "FlashReportQuery")
           , definition = function(frq){
@@ -159,7 +150,6 @@ setMethod("substitute_dates"
 #' @return A FlashReportQuery object.
 #' @import RPostgreSQL DBI
 #' @export
-
 run_query <- function(frq, ...) 0
 setGeneric("run_query")
 
@@ -168,7 +158,6 @@ setGeneric("run_query")
 #'
 #' @param con The database connection object to run the query through. Defaults
 #' to insightsdev.
-
 setMethod("run_query"
           , signature(frq = "FlashReportQuery")
           , definition = function(frq, con = redshift_connection$con){
@@ -186,12 +175,10 @@ setMethod("run_query"
 #' date_range, variable, value).
 #' @importFrom magrittr %>%
 #' @export
-
 format_raw_results <- function(frq) 0
 setGeneric("format_raw_results")
 
 #' @describeIn format_raw_results Format results of an Active Users query.
-
 setMethod("format_raw_results"
           , signature(frq = "auQuery")
           , definition = function(frq){
@@ -208,7 +195,6 @@ setMethod("format_raw_results"
           })
 
 #' @describeIn format_raw_results Format results of a platform action query.
-
 setMethod("format_raw_results"
           , signature(frq = "paQuery")
           , definition = function(frq){
@@ -230,7 +216,6 @@ setMethod("format_raw_results"
           })
 
 #' @describeIn format_raw_results Format results of a notifications query.
-
 setMethod("format_raw_results"
           , signature(frq = "notificationsQuery")
           , definition = function(frq){
