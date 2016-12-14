@@ -5,7 +5,9 @@ library(RPostgreSQL)
 
 # Parse arguments
 
-opt <- flashreport::define_option_list()
+option_list <- flashreport::define_option_list()
+opt_parser <- optparse::OptionParser(option_list)
+opt <- optparse::parse_args(opt_parser)
 
 # Connect to redshift
  

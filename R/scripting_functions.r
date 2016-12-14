@@ -5,7 +5,7 @@
 #' @import optparse
 #' @export
 define_option_list <- function(){
-  option_list <- list(
+  list(
     optparse::make_option(
       opt_str =  '--host'
       , type = 'character'
@@ -67,7 +67,4 @@ define_option_list <- function(){
       , help = 'Name of output csv file. Enter as name_of_output not name_of_output.csv'
     ) 
   )
-
-  opt_parser <- optparse::OptionParser(option_list)
-  parse_args(opt_parser)
 }
