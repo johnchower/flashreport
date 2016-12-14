@@ -3,6 +3,7 @@
 #' @return A list with entries host, port, user, pass, rundate,
 #' minweek, maxweek, yearbeginning, outloc, outname 
 #' @import optparse
+#' @export
 define_option_list <- function(){
   option_list <- list(
     optparse::make_option(
