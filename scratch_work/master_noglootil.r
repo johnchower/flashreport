@@ -37,31 +37,16 @@ optionList <-   list(
         Must be entered in the form yyyy-mm-dd. Defaults to current date.'
     ) ,
     optparse::make_option(
-      opt_str = '--minweek'
-      , type = 'integer'
-      , default = 1
-      , help = 'The latest week to include in the analysis. 
-      If set to 1, then the most recent week in the analysis will be the week 
-      preceding the rundate (not inclusive). If set to 2, then the most recent 
-      week in the analysis will be the week before the week preceding the rundate. 
-      [default = %default]'
-    ) ,
-    optparse::make_option(
-      opt_str = '--maxweek'
-      , type = 'integer'
-      , default = 1
-      , help = 'The earliest week to include in the analysis.
-      Works the same way as minweek. Together, rundate, minweek, 
-      and maxweek determine the overall date range reported in the results. 
-      For example, rundate = 2016-12-09, minweek = 1, maxweek = 2 will give 
-      results for the weeks (2016-12-02 - 2016-12-08) and (2016-11-25 - 2016-12-07). 
-      [default = %default]'
+      opt_str = '--mindate'
+      , type = 'character'
+      , default = '2016-01-01'
+      , help = 'The earliest date to occur in the analysis.'
     ) ,
     optparse::make_option(
       opt_str = '--yearbeginning'
       , type = 'character'
       , default = '2016-01-01'
-      , help = 'User name for database connection'
+      , help = 'The date at which active users start getting counted. Anyone who did not have a session before this date is excluded from the analysis.'
     ) ,
     optparse::make_option(
       opt_str = '--outloc'
@@ -81,38 +66,33 @@ opt_parser <- optparse::OptionParser(option_list = optionList)
 opt <- optparse::parse_args(opt_parser)
 
 # Connect to redshift
- 
-glootility::connect_to_redshift()
-
-# driver <- DBI::dbDriver("PostgreSQL")
- 
-# connection <- RPostgreSQL::dbConnect(
-#                 driver
-#                 , dbname = 'insightsbeta'
-#                 , host = opt$host
-#                 , port = opt$port
-#                 , user = opt$user
-#                 , password = opt$pass
-#               ) 
- 
-# assign("redshift_connection"
-#        , list(drv = driver, con = connection)
-#        , envir = .GlobalEnv)
+driver <- DBI::dbDriver("PostgreSQL")
+connection <- RPostgreSQL::dbConnect(
+                driver
+                , dbname = 'insightsbeta'
+                , host = opt$host
+                , port = opt$port
+                , user = opt$user
+                , password = opt$pass
+              ) 
+assign("redshift_connection"
+       , list(drv = driver, con = connection)
+       , envir = .GlobalEnv)
 
 # Define temporary tables that future queries will use.
-
 dbSendQuery(redshift_connection$con, 
   flashreport::query_user_flash_cat
 )
-
 dbSendQuery(redshift_connection$con,
   flashreport::query_pa_flash_cat
 )
 
 # Define date ranges and query types to get results for.
-
 run_date <- as.Date(opt$rundate)
-weeks_back <- as.numeric(opt$minweek):as.numeric(opt$maxweek)
+min_date <- as.Date(opt$mindate)
+days_between <- as.numeric(run_date - min_date)
+min_week <- ceiling(days_between/7)
+weeks_back <- min_week:1
 start_dates <- run_date - 7*weeks_back
 end_dates <- start_dates + 6
 year_beginning <- as.Date(opt$yearbeginning)
