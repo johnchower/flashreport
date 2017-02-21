@@ -122,8 +122,11 @@ summarise_in_aggregate <- function(long_flash_report_2){
 calculate_WAU_percentage <- function(long_flash_report_3){
   long_flash_report_3 %>%
     dplyr::filter(grepl(pattern = "active_user", x = variable)) %>%
-    reshape2::dcast(date_range + user_group ~ variable, value.var = 'value') %>%
-    dplyr::mutate(active_users_WAU_pct = active_users_week/active_users_ytd) %>%
+    reshape2::dcast(date_range + user_group ~ variable
+                    , value.var = 'value') %>%
+    dplyr::mutate(
+      active_users_WAU_pct = active_users_week/active_users_ytd
+    ) %>%
     reshape2::melt(id.vars = c("date_range", "user_group")
          , variable.name = "variable"
          , value.name = "value") %>%
@@ -148,8 +151,8 @@ calculate_total_actions <- function(long_flash_report_3){
     {dplyr::ungroup(.)}
 }
 
-#' Calculate average actions per WAU for each user group, subaggregate, and aggregate,
-#' and for each date range.
+#' Calculate average actions per WAU for each user group, subaggregate, 
+#' and aggregate, and for each date range.
 #'
 #' @param long_flash_report_3 The rbinded results of
 #' summarise_by_subaggregate, summarise_in_aggregate, and curate_user_groups.
@@ -165,9 +168,11 @@ calculate_actions_per_AU <- function(long_flash_report_3
           , long_flash_report_3) %>%
     dplyr::filter(variable == "platform_actions_total"
            | variable == "active_users_week") %>%
-    reshape2::dcast(date_range + user_group ~ variable, value.var = 'value') %>%
+    reshape2::dcast(date_range + user_group ~ variable
+                    , value.var = 'value') %>%
     dplyr::mutate(
-      platform_actions_per_active_user = platform_actions_total/active_users_week
+      platform_actions_per_active_user 
+        = platform_actions_total/active_users_week
     ) %>%
     reshape2::melt(id.vars = c("date_range", "user_group")
          , variable.name = "variable"

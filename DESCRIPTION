@@ -16,3 +16,4 @@ Imports: DBI,
     reshape2,
     methods,
     optparse
+Suggests: testthat
