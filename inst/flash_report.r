@@ -1,4 +1,4 @@
-#!/Users/johnhower/anaconda/envs/flashReportV1/bin Rscript
+# !/Users/johnhower/anaconda/envs/flashReportV1/bin Rscript
 
 library(RPostgreSQL)
 
@@ -46,7 +46,9 @@ optionList <-   list(
       opt_str = '--yearbeginning'
       , type = 'character'
       , default = '2016-01-01'
-      , help = 'The date at which active users start getting counted. Anyone who did not have a session before this date is excluded from the analysis.'
+      , help = 'The date at which active users start getting counted. 
+        Anyone who did not have a session before this date is excluded 
+        from the analysis.'
     ) ,
     optparse::make_option(
       opt_str = '--outloc'
@@ -59,7 +61,8 @@ optionList <-   list(
       opt_str = '--outname'
       , type = 'character'
       , default = NULL
-      , help = 'Name of output csv file. Enter as name_of_output not name_of_output.csv'
+      , help = 'Name of output csv file. 
+      Enter as name_of_output not name_of_output.csv'
     ) 
   )
 opt_parser <- optparse::OptionParser(option_list = optionList)
@@ -141,8 +144,8 @@ long_flash_report_WAU_pct <-
 long_flash_report_total_actions <- 
   flashreport::calculate_total_actions(long_flash_report_3)
 
-# Calculate average actions per WAU for each user group, subaggregate, and aggregate,
-# and for each date range.
+# Calculate average actions per WAU for each user group, subaggregate
+# , and aggregate, and for each date range.
 
 long_flash_report_actions_per_AU <-
   flashreport::calculate_actions_per_AU(
@@ -150,8 +153,8 @@ long_flash_report_actions_per_AU <-
     , long_flash_report_total_actions
   )
 
-# Calculate notifications_response_rate for each user group, subaggregate, and aggregate,
-# and for each date range.
+# Calculate notifications_response_rate for each user group,
+# subaggregate, and aggregate, and for each date range.
 
 long_flash_report_NRR <- 
   flashreport::calculate_NRR(long_flash_report_3)

@@ -2,3 +2,6 @@
 .Rhistory
 .RData
 Session.vim
+**\.Rproj*
+inst/scratch_work/*
+**\.sw*
