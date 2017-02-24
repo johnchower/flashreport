@@ -83,7 +83,8 @@ curate_user_groups <- function(long_flash_report_dates_formatted){
 #' @importFrom magrittr %>%
 #' @export
 summarise_by_subaggregate <- function(long_flash_report_2
-                                      , subaggregate_df = flashreport::subaggregates){
+                                      , subaggregate_df = 
+                                          flashreport::subaggregates){
   long_flash_report_2 %>%
     dplyr::left_join(subaggregate_df
                      , by = "user_group") %>%
@@ -91,6 +92,30 @@ summarise_by_subaggregate <- function(long_flash_report_2
     dplyr::summarise(value = sum(value)) %>%
     dplyr::rename(user_group = subaggregate) %>%
     dplyr::select(user_group, date_range, variable, value) %>%
+    {dplyr::ungroup(.)}
+}
+
+#' Summarises results by isFL.
+#'
+#' @param long_flash_report_2 The result of calling curate_user_groups.
+#' @param isFL_df A data frame that matches each user group to an
+#' appropriate isFL (content champions, enterprise champions, other
+#' champions, and internal users).
+#' @return A summarised version of long_flash_report_2. Same column structure,
+#' but fewer rows.
+#' @importFrom magrittr %>%
+#' @export
+summarise_by_isFL <- function(long_flash_report_2
+                                      , isFL_df = 
+                                          flashreport::isFL){
+  long_flash_report_2 %>%
+    dplyr::left_join(isFL_df
+                     , by = "user_group") %>%
+    dplyr::group_by(isFL, date_range, variable) %>%
+    dplyr::summarise(value = sum(value)) %>%
+    dplyr::rename(user_group = isFL) %>%
+    dplyr::select(user_group, date_range, variable, value) %>%
+    dplyr::filter(user_group!="FamilyLife") %>%
     {dplyr::ungroup(.)}
 }
 

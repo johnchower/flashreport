@@ -2,8 +2,8 @@
 % Please edit documentation in R/processing_functions.r
 \name{calculate_actions_per_AU}
 \alias{calculate_actions_per_AU}
-\title{Calculate average actions per WAU for each user group, subaggregate, and aggregate,
-and for each date range.}
+\title{Calculate average actions per WAU for each user group, subaggregate, 
+and aggregate, and for each date range.}
 \usage{
 calculate_actions_per_AU(long_flash_report_3, long_flash_report_total_actions)
 }
@@ -19,7 +19,7 @@ A data frame with the same column structure as the input, but with
 additional rows corresponding to the actions_per_AU variable.
 }
 \description{
-Calculate average actions per WAU for each user group, subaggregate, and aggregate,
-and for each date range.
+Calculate average actions per WAU for each user group, subaggregate, 
+and aggregate, and for each date range.
 }
 

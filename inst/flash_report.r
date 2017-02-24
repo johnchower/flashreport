@@ -125,11 +125,15 @@ long_flash_report_2 <-
 long_flash_report_subaggregate <- 
   flashreport::summarise_by_subaggregate(long_flash_report_2)
 
+long_flash_report_isFL <- 
+  flashreport::summarise_by_isFL(long_flash_report_2)
+
 long_flash_report_aggregate <- 
   flashreport::summarise_in_aggregate(long_flash_report_2)
 
 long_flash_report_3 <- rbind(long_flash_report_2
                                  , long_flash_report_subaggregate
+                                 , long_flash_report_isFL
                                  , long_flash_report_aggregate)
 
 # Calculate WAU percentage for each user group, subaggregate, and aggregate,

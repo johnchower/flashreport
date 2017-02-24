@@ -8,10 +8,16 @@
 #' @format A length-one character vector.
 "pa_classes"
 
-#' A string containing all (user_group, subaggregate) pairs.
+#' A data.frame containing all (user_group, subaggregate) pairs.
 #'
 #' @format A length-one character vector.
 "subaggregates"
+
+#' A data.frame containing all (user_group, isFL) pairs.
+#'
+#' @format A length-one character vector.
+"isFL"
+
 
 #' A list of strings containing all query prototypes.
 #'

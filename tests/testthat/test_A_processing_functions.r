@@ -261,6 +261,49 @@ test_that("summarise_by_subaggregate does its job",{
   expect_true(all(date_formats))
 })
 
+long_flash_report_isFL <- 
+  flashreport::summarise_by_isFL(long_flash_report_2)
+
+test_that("summarise_by_isFL does its job",{
+  expect_is(long_flash_report_isFL
+            , 'data.frame')
+  colnames_to_test <- colnames(long_flash_report_isFL)
+  expected_colnames <- c('user_group'
+                         , 'date_range'
+                         , 'variable'
+                         , 'value')
+  expect_equal(colnames_to_test[order(colnames_to_test)]
+               , expected_colnames[order(expected_colnames)])
+  user_groups_to_test <- unique(long_flash_report_isFL$user_group)
+  expected_user_groups <- c("All But FamilyLife")
+  expect_equal(user_groups_to_test[order(user_groups_to_test)]
+               , expected_user_groups[order(expected_user_groups)])
+  variables_to_test <- unique(long_flash_report_isFL$variable)
+  expected_variables <- unique(c("active_users_week"
+                          , "platform_actions_Connect"
+                          , "platform_actions_Consume"
+                          , "platform_actions_Create"
+                          , "platform_actions_Feed"
+                          , "platform_actions_Invite"
+                          , "platform_actions_Other actions"
+                          , "platform_actions_Space"
+                          , "platform_actions_To-do"
+                          , "notifications_Read"
+                          , "notifications_Unobserved"
+                          , "notifications_Unread"
+                          , "notifications_NA"
+                          , "active_users_ytd"
+                          ))
+  expect_equal(variables_to_test[order(variables_to_test)]
+               , expected_variables[order(expected_variables)])
+  dates_to_test <- unique(long_flash_report_isFL$date_range)
+  expect_is(dates_to_test
+            , "character")
+  date_formats <- grepl(pattern = "[0-9]{4}/[0-9]{2}/[0-9]{2}"
+                        , x = dates_to_test)
+  expect_true(all(date_formats))
+})
+
 long_flash_report_aggregate <- 
   flashreport::summarise_in_aggregate(long_flash_report_2)
 
@@ -306,6 +349,7 @@ test_that("summarise_in_aggregate does its job",{
 
 long_flash_report_3 <- rbind(long_flash_report_2
                                  , long_flash_report_subaggregate
+                                 , long_flash_report_isFL
                                  , long_flash_report_aggregate)
 
 long_flash_report_WAU_pct <- 
@@ -344,6 +388,7 @@ test_that("calculate_WAU_percentage does its job",{
                             , "Total Enterprise"
                             , "Total Other"
                             , "Total"
+                            , "All But FamilyLife"
                             )
   expect_equivalent(user_groups_to_test[order(user_groups_to_test)]
                     , expected_user_groups[order(expected_user_groups)])
@@ -395,6 +440,7 @@ test_that("calculate_total_actions does its job",{
                             , "Total Enterprise"
                             , "Total Other"
                             , "Total"
+                            , "All But FamilyLife"
                             )
   expect_equivalent(user_groups_to_test[order(user_groups_to_test)]
                     , expected_user_groups[order(expected_user_groups)])
@@ -449,6 +495,7 @@ test_that("calculate_actions_per_AU does its job",{
                             , "Total Enterprise"
                             , "Total Other"
                             , "Total"
+                            , "All But FamilyLife"
                             )
   expect_equivalent(user_groups_to_test[order(user_groups_to_test)]
                     , expected_user_groups[order(expected_user_groups)])
@@ -500,6 +547,7 @@ test_that("calculate_NRR does its job",{
                             , "Total Enterprise"
                             , "Total Other"
                             , "Total"
+                            , "All But FamilyLife"
                             )
   expect_equivalent(user_groups_to_test[order(user_groups_to_test)]
                     , expected_user_groups[order(expected_user_groups)])
