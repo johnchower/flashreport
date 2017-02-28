@@ -136,13 +136,19 @@ date_ranges <- data.frame(
 query_types <- paste0(c("au", "pa", "notifications"), "Query")
 
 # Run queries and put results into a long data frame.
-long_flash_report <- flashreport::get_results(date_ranges, query_types)
+long_flash_report <- flashreport::get_results(
+  date_ranges
+  , query_types
+  , user_group = opt$usergroup
+  , user_group_name = opt$usergroupname
+  , user_group_query = opt$usergroupquery
+)
 
 # Postprocess results.
-long_flash_report_formatted <-
+long_flash_report_dates_formatted <-
   flashreport::format_LFR_dates(long_flash_report )
 
-long_flash_report_3 <- rbind(long_flash_report_formatted)
+long_flash_report_3 <- rbind(long_flash_report_dates_formatted)
 
 long_flash_report_WAU_pct <-
   flashreport::calculate_WAU_percentage(long_flash_report_3)

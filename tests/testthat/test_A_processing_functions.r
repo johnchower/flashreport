@@ -304,7 +304,7 @@ test_that("summarise_by_isFL does its job", {
   expect_true(all(date_formats))
 })
 
-long_flash_report_aggregate <- 
+long_flash_report_aggregate <-
   flashreport::summarise_in_aggregate(long_flash_report_2)
 
 test_that("summarise_in_aggregate does its job", {
