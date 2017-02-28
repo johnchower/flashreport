@@ -1,8 +1,6 @@
 library(RPostgreSQL)
 library(dplyr)
 
-devtools::load_all()
-
 # Connect to redshift
 glootility::connect_to_redshift()
 
