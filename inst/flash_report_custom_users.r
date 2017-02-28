@@ -1,6 +1,7 @@
 # !/Users/johnhower/anaconda/envs/flashReportV1/bin Rscript
 
 library(RPostgreSQL)
+library(flashreport)
 
 # Parse arguments
 
