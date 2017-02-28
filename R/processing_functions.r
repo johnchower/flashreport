@@ -6,12 +6,27 @@
 #' run. Appropriate entries correspond to the names of S4 query type classes
 #' defined in R/query_functions.r (currently 'auQuery', 'paQuery',
 #' 'notificationsQuery' are the only valid options).
+#' @param user_group integer vector of user_ids to restrict results to. Cannot 
+#' specify both user_group and user_group_query.
+#' @param user_group_query Character containing a SQL query that returns a
+#' table with a single column, user_id. Cannot specify both user_group and
+#' user_group_query.
+#' @param user_group_name Character, a name for the user group you're running 
+#' the query on.
 #' @return A data frame with columns user_group (character), date_range (date
 #' ending), variable (character), value (numeric).
 #' @importFrom magrittr %>%
 #' @importFrom methods new
 #' @export
-get_results <- function(date_ranges, query_types){
+get_results <- function(date_ranges
+                        , query_types
+                        , user_group = integer(0)
+                        , user_group_query = character(0)
+                        , user_group_name = character(0)){
+  if (length(user_group) != 0
+      & length(user_group_query) != 0){
+    stop("Must specify at most one of user_group or user_group_query.")
+  }
   long_flash_report <- data.frame()
   for(i in 1:nrow(date_ranges)){
     for(queryType in query_types){
@@ -20,11 +35,15 @@ get_results <- function(date_ranges, query_types){
       rangeType <- range_i$range_types
       FRQ <- new(Class = queryType
                  , max_date = maxDate
-                 , range_type = rangeType)
+                 , range_type = rangeType
+                 , user_group = user_group
+                 , user_group_query = user_group_query
+                 , user_group_name = user_group_name)
       results <- FRQ %>%
         {flashreport::get_min_date(.)} %>%
         {flashreport::get_prototype(.)} %>%
         {flashreport::substitute_dates(.)} %>%
+        {flashreport::substitute_user_group_name(.)} %>%
         {flashreport::run_query(.)} %>%
         {flashreport::format_raw_results(.)} %>%
         {.@final_results}
@@ -219,9 +238,13 @@ calculate_NRR <- function(long_flash_report_3){
     dplyr::filter(grepl(pattern = "notifications", x = variable)) %>%
     dplyr::group_by(date_range, user_group) %>%
     dplyr::mutate(notifications_events_total = sum(value)) %>%
-    dplyr::filter(variable == "notifications_Read") %>%
-    {dplyr::ungroup(.)} %>%
-    dplyr::mutate(notifications_response_rate = value/notifications_events_total) %>%
-    dplyr::select(user_group, date_range, value = notifications_response_rate) %>%
+    dplyr::filter(variable == "notifications_Read") %>% {
+    dplyr::ungroup(.)
+    } %>%
+    dplyr::mutate(notifications_response_rate =
+                    value / notifications_events_total) %>%
+    dplyr::select(user_group
+                  , date_range
+                  , value = notifications_response_rate) %>%
     dplyr::mutate(variable = "notifications_response_rate")
 }

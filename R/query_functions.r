@@ -4,6 +4,13 @@
 #' for which results are collected.
 #' @slot max_date A Date object, representing the final day of the date ranges
 #' for which results are collected.
+#' @slot user_group integer vector of user_ids to restrict results to. Cannot 
+#' specify both user_group and user_group_query.
+#' @slot user_group_query Character containing a SQL query that returns a
+#' table with a single column, user_id. Cannot specify both user_group and
+#' user_group_query.
+#' @slot user_group_name Character, a name for the user group you're running 
+#' the query on.
 #' @slot query_prototype A character. Represents the SQL query that will return
 #' the desired results, but the date filters are general, and need to be subbed
 #' in using the 'substitute_dates' method.
@@ -16,14 +23,16 @@ setClass(
   , slots = c(
       min_date = "Date"
       , max_date = "Date"
+      , user_group = "integer"
+      , user_group_query = "character"
+      , user_group_name = "character"
       , query_prototype = "character"
       , query = "character"
       , raw_results = "data.frame"
       , final_results = "data.frame"
     )
-  , prototype = list(min_date = as.Date('2016-01-01'))
-)
-
+  , prototype = list(min_date = as.Date("2016-01-01"))
+) 
 #' An S4 class to represent an 'active users' Flash Report query.
 #'
 #' @slot range_type A character indicating whether to use a year-to-date range
@@ -91,17 +100,80 @@ setGeneric("get_prototype")
 setMethod("get_prototype"
           , signature(frq = "auQuery")
           , definition = function(frq){
-            frq@query_prototype <- 
-              flashreport::query_prototype_list$auPrototype
+            user_group_exists <- length(frq@user_group) != 0
+            user_group_query_exists <- length(frq@user_group_query) != 0
+            user_group_name_exists <- length(frq@user_group_name) != 0
+            if (!user_group_exists
+                & !user_group_query_exists
+                & !user_group_name_exists){
+              frq@query_prototype <- 
+                flashreport::query_prototype_list$auPrototype
+            } else if (user_group_exists 
+                       & user_group_query_exists){
+              stop("Must specify at most one of user_group or user_group_query.")
+            } else if (!user_group_exists
+                       & !user_group_query_exists
+                       & user_group_name_exists){
+              warning("Did you mean to specify a user group?")
+              frq@query_prototype <- 
+                flashreport::query_prototype_list$auPrototype
+            } else if ((user_group_exists
+                       | user_group_query_exists)
+                       & !user_group_name_exists){
+              stop("Must specify a name for your user group.")
+            } else {
+              if (user_group_exists) {
+                frq@user_group_query <- 
+                  paste0(
+                    "SELECT id as user_id FROM user_dimensions WHERE id IN ("
+                    , paste(frq@user_group, collapse = ",")
+                    , ")"
+                  )
+              }
+              frq@query_prototype <- 
+                flashreport::query_prototype_list$auCustomPrototype
+            }
             return(frq)
           })
 
-#' @describeIn get_prototype Get the query prototype for a platform actions query.
+#' @describeIn get_prototype Get the query prototype for a platform actions 
+#' query.
 setMethod("get_prototype"
           , signature(frq = "paQuery")
           , definition = function(frq){
-            frq@query_prototype <- 
-              flashreport::query_prototype_list$paPrototype
+            user_group_exists <- length(frq@user_group) != 0
+            user_group_query_exists <- length(frq@user_group_query) != 0
+            user_group_name_exists <- length(frq@user_group_name) != 0
+            if (!user_group_exists
+                & !user_group_query_exists
+                & !user_group_name_exists){
+              frq@query_prototype <- 
+                flashreport::query_prototype_list$paPrototype
+            } else if (user_group_exists 
+                       & user_group_query_exists){
+              stop("Must specify at most one of user_group or user_group_query.")
+            } else if (!user_group_exists
+                       & !user_group_query_exists
+                       & user_group_name_exists){
+              warning("Did you mean to specify a user group?")
+              frq@query_prototype <- 
+                flashreport::query_prototype_list$paPrototype
+            } else if ((user_group_exists
+                       | user_group_query_exists)
+                       & !user_group_name_exists){
+              stop("Must specify a name for your user group.")
+            } else {
+              if (user_group_exists) {
+                frq@user_group_query <- 
+                  paste0(
+                    "SELECT id as user_id FROM user_dimensions WHERE id IN ("
+                    , paste(frq@user_group, collapse = ",")
+                    , ")"
+                  )
+              }
+              frq@query_prototype <- 
+                flashreport::query_prototype_list$paCustomPrototype
+            }
             return(frq)
           })
 
@@ -109,8 +181,39 @@ setMethod("get_prototype"
 setMethod("get_prototype"
           , signature(frq = "notificationsQuery")
           , definition = function(frq){
-            frq@query_prototype <- 
-              flashreport::query_prototype_list$notificationsPrototype
+            user_group_exists <- length(frq@user_group) != 0
+            user_group_query_exists <- length(frq@user_group_query) != 0
+            user_group_name_exists <- length(frq@user_group_name) != 0
+            if (!user_group_exists
+                & !user_group_query_exists
+                & !user_group_name_exists){
+              frq@query_prototype <- 
+                flashreport::query_prototype_list$notificationsPrototype
+            } else if (user_group_exists 
+                       & user_group_query_exists){
+              stop("Must specify at most one of user_group or user_group_query.")
+            } else if (!user_group_exists
+                       & !user_group_query_exists
+                       & user_group_name_exists){
+              warning("Did you mean to specify a user group?")
+              frq@query_prototype <- 
+                flashreport::query_prototype_list$notificationsPrototype
+            } else if ((user_group_exists
+                       | user_group_query_exists)
+                       & !user_group_name_exists){
+              stop("Must specify a name for your user group.")
+            } else {
+              if (user_group_exists) {
+                frq@user_group_query <- 
+                  paste0(
+                    "SELECT id as user_id FROM user_dimensions WHERE id IN ("
+                    , paste(frq@user_group, collapse = ",")
+                    , ")"
+                  )
+              }
+              frq@query_prototype <- 
+                flashreport::query_prototype_list$notificationsCustomPrototype
+            }
             return(frq)
           })
 
@@ -139,6 +242,45 @@ setMethod("substitute_dates"
                                  , replacement = max(numeric_dates)
                                  , x = actual_query_0)
             frq@query <- actual_query
+            return(frq)
+          })
+
+#' A generic function to substitute the correct user_group_query and
+#' user_group_name into the query slot of a FlashReportQuery object
+#' , and return the result in the query slot.
+#'
+#' @param frq A FlashReportQuery object.
+#' @return A FlashReportQuery object.
+#' @export
+substitute_user_group_name <- function(frq) 0
+setGeneric("substitute_user_group_name")
+
+#' @describeIn substitute_user_group_name Substitute the user_group and 
+#' user_group_names into the query slot. Return result in the query slot.
+setMethod("substitute_user_group_name"
+          , signature(frq = "FlashReportQuery")
+          , definition = function(frq){
+            user_group_query_exists <- length(frq@user_group_query) != 0
+            user_group_name_exists <- length(frq@user_group_name) != 0
+            if (user_group_query_exists
+                & !user_group_name_exists) {
+              stop("Must specify a name for your user group.")
+            } else if (!user_group_query_exists
+                       & user_group_name_exists){
+              warning("Did you mean to specify a user group?")
+            } else if (user_group_query_exists
+                       & user_group_name_exists){
+              current_query <- frq@query
+              query_with_user_group_name <- 
+                gsub(pattern = "xyz_user_group_name_xyz"
+                     , replacement = paste0("'", frq@user_group_name, "'")
+                     , x = current_query)
+              query_with_user_group <- 
+                gsub(pattern = "xyz_user_group_query_xyz"
+                     , replacement = frq@user_group_query
+                     , x = query_with_user_group_name)
+              frq@query <- query_with_user_group
+            }
             return(frq)
           })
 
