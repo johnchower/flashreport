@@ -6,7 +6,8 @@
 \alias{get_prototype,auQuery-method}
 \alias{get_prototype,notificationsQuery-method}
 \alias{get_prototype,paQuery-method}
-\title{query_prototype slot of a FlashReport query.}
+\title{A generic function to grab the correct query prototype and stick it into the
+query_prototype slot of a FlashReport query.}
 \usage{
 get_prototype(frq)
 
@@ -23,6 +24,7 @@ get_prototype(frq)
 A FlashReportQuery object of the same subtype that was input.
 }
 \description{
+A generic function to grab the correct query prototype and stick it into the
 query_prototype slot of a FlashReport query.
 }
 \section{Methods (by class)}{
