@@ -32,7 +32,7 @@ setClass(
       , final_results = "data.frame"
     )
   , prototype = list(min_date = as.Date("2016-01-01"))
-) 
+)
 #' An S4 class to represent an 'active users' Flash Report query.
 #'
 #' @slot range_type A character indicating whether to use a year-to-date range
@@ -77,17 +77,17 @@ setGeneric("get_min_date")
 setMethod("get_min_date"
           , signature(frq = "FlashReportQuery")
           , definition = function(frq){
-            if(frq@range_type == 'week'){
+            if (frq@range_type == "week") {
               minDate <- frq@max_date - 6
             } else {
-              minDate <- as.Date('2016-01-01')
+              minDate <- as.Date("2016-01-01")
             }
             frq@min_date <- minDate
             return(frq)
           }
-)                     
+)
 
-#' A generic function to grab the correct query prototype and stick it into the
+#" A generic function to grab the correct query prototype and stick it into the
 #' query_prototype slot of a FlashReport query.
 #' 
 #' @param frq An object that inherits from FlashReportQuery.
@@ -106,31 +106,31 @@ setMethod("get_prototype"
             if (!user_group_exists
                 & !user_group_query_exists
                 & !user_group_name_exists){
-              frq@query_prototype <- 
+              frq@query_prototype <-
                 flashreport::query_prototype_list$auPrototype
-            } else if (user_group_exists 
+            } else if (user_group_exists
                        & user_group_query_exists){
-              stop("Must specify at most one of user_group or user_group_query.")
+              stop("Cannot specify both user_group and user_group_query.")
             } else if (!user_group_exists
                        & !user_group_query_exists
                        & user_group_name_exists){
               warning("Did you mean to specify a user group?")
-              frq@query_prototype <- 
+              frq@query_prototype <-
                 flashreport::query_prototype_list$auPrototype
-            } else if ((user_group_exists
+            } else if ( (user_group_exists
                        | user_group_query_exists)
                        & !user_group_name_exists){
               stop("Must specify a name for your user group.")
             } else {
               if (user_group_exists) {
-                frq@user_group_query <- 
+                frq@user_group_query <-
                   paste0(
                     "SELECT id as user_id FROM user_dimensions WHERE id IN ("
                     , paste(frq@user_group, collapse = ",")
                     , ")"
                   )
               }
-              frq@query_prototype <- 
+              frq@query_prototype <-
                 flashreport::query_prototype_list$auCustomPrototype
             }
             return(frq)
@@ -147,31 +147,31 @@ setMethod("get_prototype"
             if (!user_group_exists
                 & !user_group_query_exists
                 & !user_group_name_exists){
-              frq@query_prototype <- 
+              frq@query_prototype <-
                 flashreport::query_prototype_list$paPrototype
-            } else if (user_group_exists 
+            } else if (user_group_exists
                        & user_group_query_exists){
-              stop("Must specify at most one of user_group or user_group_query.")
+              stop("Cannot specify both user_group and user_group_query.")
             } else if (!user_group_exists
                        & !user_group_query_exists
                        & user_group_name_exists){
               warning("Did you mean to specify a user group?")
-              frq@query_prototype <- 
+              frq@query_prototype <-
                 flashreport::query_prototype_list$paPrototype
-            } else if ((user_group_exists
+            } else if ( (user_group_exists
                        | user_group_query_exists)
                        & !user_group_name_exists){
               stop("Must specify a name for your user group.")
             } else {
               if (user_group_exists) {
-                frq@user_group_query <- 
+                frq@user_group_query <-
                   paste0(
                     "SELECT id as user_id FROM user_dimensions WHERE id IN ("
                     , paste(frq@user_group, collapse = ",")
                     , ")"
                   )
               }
-              frq@query_prototype <- 
+              frq@query_prototype <-
                 flashreport::query_prototype_list$paCustomPrototype
             }
             return(frq)
@@ -187,31 +187,31 @@ setMethod("get_prototype"
             if (!user_group_exists
                 & !user_group_query_exists
                 & !user_group_name_exists){
-              frq@query_prototype <- 
+              frq@query_prototype <-
                 flashreport::query_prototype_list$notificationsPrototype
-            } else if (user_group_exists 
+            } else if (user_group_exists
                        & user_group_query_exists){
-              stop("Must specify at most one of user_group or user_group_query.")
+              stop("Cannot specify both user_group and user_group_query.")
             } else if (!user_group_exists
                        & !user_group_query_exists
                        & user_group_name_exists){
               warning("Did you mean to specify a user group?")
-              frq@query_prototype <- 
+              frq@query_prototype <-
                 flashreport::query_prototype_list$notificationsPrototype
-            } else if ((user_group_exists
+            } else if ( (user_group_exists
                        | user_group_query_exists)
                        & !user_group_name_exists){
               stop("Must specify a name for your user group.")
             } else {
               if (user_group_exists) {
-                frq@user_group_query <- 
+                frq@user_group_query <-
                   paste0(
                     "SELECT id as user_id FROM user_dimensions WHERE id IN ("
                     , paste(frq@user_group, collapse = ",")
                     , ")"
                   )
               }
-              frq@query_prototype <- 
+              frq@query_prototype <-
                 flashreport::query_prototype_list$notificationsCustomPrototype
             }
             return(frq)
@@ -271,11 +271,11 @@ setMethod("substitute_user_group_name"
             } else if (user_group_query_exists
                        & user_group_name_exists){
               current_query <- frq@query
-              query_with_user_group_name <- 
+              query_with_user_group_name <-
                 gsub(pattern = "xyz_user_group_name_xyz"
                      , replacement = paste0("'", frq@user_group_name, "'")
                      , x = current_query)
-              query_with_user_group <- 
+              query_with_user_group <-
                 gsub(pattern = "xyz_user_group_query_xyz"
                      , replacement = frq@user_group_query
                      , x = query_with_user_group_name)
@@ -333,7 +333,7 @@ setMethod("format_raw_results"
               ) %>%
               dplyr::select(user_group, date_range, variable, value)
             frq@final_results <- finals
-            return(frq) 
+            return(frq)
           })
 
 #' @describeIn format_raw_results Format results of a platform action query.
@@ -345,15 +345,15 @@ setMethod("format_raw_results"
                             , value = count) %>%
               dplyr::mutate(
                 variable = paste0("platform_actions_", pa_cat)
-                , date_range = frq@max_date 
+                , date_range = frq@max_date
               ) %>%
               dplyr::select(user_group, date_range, variable, value)
             frq@final_results <- finals
-            if(frq@range_type == 'week'){
-              return(frq) 
-            } else { 
+            if (frq@range_type == "week"){
+              return(frq)
+            } else {
               frq@final_results <- data.frame()
-              return(frq) 
+              return(frq)
             }
           })
 
@@ -370,10 +370,10 @@ setMethod("format_raw_results"
               ) %>%
               dplyr::select(user_group, date_range, variable, value)
             frq@final_results <- finals
-            if(frq@range_type == 'week'){
-              return(frq) 
-            } else { 
+            if (frq@range_type == "week"){
+              return(frq)
+            } else {
               frq@final_results <- data.frame()
-              return(frq) 
+              return(frq)
             }
           })
