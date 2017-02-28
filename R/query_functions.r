@@ -33,6 +33,7 @@ setClass(
     )
   , prototype = list(min_date = as.Date("2016-01-01"))
 )
+
 #' An S4 class to represent an 'active users' Flash Report query.
 #'
 #' @slot range_type A character indicating whether to use a year-to-date range
@@ -87,7 +88,7 @@ setMethod("get_min_date"
           }
 )
 
-#" A generic function to grab the correct query prototype and stick it into the
+#' A generic function to grab the correct query prototype and stick it into the
 #' query_prototype slot of a FlashReport query.
 #' 
 #' @param frq An object that inherits from FlashReportQuery.
