@@ -140,10 +140,13 @@ date_ranges <- data.frame(
 query_types <- paste0(c("au", "pa", "notifications"), "Query")
 
 if (length(opt$usergroupquery) > 0){
-  ugquery <- paste(
+  ugquery0 <- paste(
                readLines(con = opt$usergroupquery)
                , collapse = " "
              )
+  ugquery <- gsub(pattern = ";"
+                  , replacement = ""
+                  , x = ugquery0)
 } else {
   ugquery <- character(0)
 }
