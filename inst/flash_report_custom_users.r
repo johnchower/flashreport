@@ -4,6 +4,7 @@ library(RPostgreSQL)
 library(flashreport)
 
 # Parse arguments
+print("Parsing arguments...")
 
 option_list <-   list(
     optparse::make_option(
@@ -93,6 +94,7 @@ opt_parser <- optparse::OptionParser(option_list = option_list)
 opt <- optparse::parse_args(opt_parser)
 
 # Connect to redshift
+print("Connecting to Redshift ...")
 driver <- DBI::dbDriver("PostgreSQL")
 connection <- RPostgreSQL::dbConnect(
                 driver
@@ -107,6 +109,7 @@ assign("redshift_connection"
        , envir = .GlobalEnv)
 
 # Define temporary tables that future queries will use.
+print("Defining temporary tables ...")
 dbSendQuery(redshift_connection$con,
   flashreport::query_user_flash_cat
 )
@@ -146,6 +149,7 @@ if (length(opt$usergroupquery) > 0){
 }
 
 # Run queries and put results into a long data frame.
+print("Fetching results...")
 long_flash_report <- flashreport::get_results(
   date_ranges
   , query_types
@@ -155,6 +159,7 @@ long_flash_report <- flashreport::get_results(
 )
 
 # Postprocess results.
+print("Processing results...")
 long_flash_report_dates_formatted <-
   flashreport::format_LFR_dates(long_flash_report )
 
@@ -182,7 +187,9 @@ long_flash_report_final <- rbind(long_flash_report_3
                                  , long_flash_report_actions_per_AU
                                  , long_flash_report_NRR)
 
+print("Writing results to file...")
 write.csv(long_flash_report_final
           , file = paste0(opt$outloc, "/", opt$outname, ".csv")
           , row.names = F)
+print("Disconnecting from Redshift...")
 dbDisconnect(redshift_connection$con)
