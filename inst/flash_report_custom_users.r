@@ -69,10 +69,10 @@ option_list <-   list(
       opt_str = "--usergroupquery"
       , type = "character"
       , default = character(0)
-      , help = "SQL query that returns a table with a single column,
-                titled user_id, which contains the set of user_ids
-                that you want to include in the report. Cannot
-                specify both usergroupquery and usergroup."
+      , help = "Full path to a SQL query that returns a table with
+                a single column, titled user_id, which contains the
+                set of user_ids that you want to include in the report.
+                Cannot specify both usergroupquery and usergroup."
     ),
     optparse::make_option(
       opt_str = "--usergroup"
@@ -136,13 +136,22 @@ date_ranges <- data.frame(
 
 query_types <- paste0(c("au", "pa", "notifications"), "Query")
 
+if (length(opt$usergroupquery) > 0){
+  ugquery <- paste(
+               readLines(con = opt$usergroupquery)
+               , collapse = " "
+             )
+} else {
+  ugquery <- character(0)
+}
+
 # Run queries and put results into a long data frame.
 long_flash_report <- flashreport::get_results(
   date_ranges
   , query_types
   , user_group = opt$usergroup
   , user_group_name = opt$usergroupname
-  , user_group_query = opt$usergroupquery
+  , user_group_query = ugquery
 )
 
 # Postprocess results.
