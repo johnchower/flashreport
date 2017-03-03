@@ -31,7 +31,8 @@ query_prototype slot of a FlashReport query.
 \itemize{
 \item \code{auQuery}: Get the query prototype for an active users query.
 
-\item \code{paQuery}: Get the query prototype for a platform actions query.
+\item \code{paQuery}: Get the query prototype for a platform actions 
+query.
 
 \item \code{notificationsQuery}: Get the query prototype for a notifications query.
 }}

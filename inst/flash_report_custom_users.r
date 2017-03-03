@@ -1,11 +1,12 @@
 # !/Users/johnhower/anaconda/envs/flashReportV1/bin Rscript
 
 library(RPostgreSQL)
+library(flashreport)
 
 # Parse arguments
 print("Parsing arguments...")
 
-optionList <-   list(
+option_list <-   list(
     optparse::make_option(
       opt_str =  "--host"
       , type = "character"
@@ -48,7 +49,7 @@ optionList <-   list(
       , type = "character"
       , default = "2016-01-01"
       , help = "The date at which active users start getting counted.
-        Anyone who did not have a session after this date is excluded
+        Anyone who did not have a session before this date is excluded
         from the analysis."
     ),
     optparse::make_option(
@@ -64,14 +65,36 @@ optionList <-   list(
       , default = NULL
       , help = "Name of output csv file.
       Enter as name_of_output not name_of_output.csv"
+    ),
+    optparse::make_option(
+      opt_str = "--usergroupquery"
+      , type = "character"
+      , default = character(0)
+      , help = "Full path to a SQL query that returns a table with
+                a single column, titled user_id, which contains the
+                set of user_ids that you want to include in the report.
+                Cannot specify both usergroupquery and usergroup."
+    ),
+    optparse::make_option(
+      opt_str = "--usergroup"
+      , type = "integer"
+      , default = integer(0)
+      , help = "Vector of integers representing the set of user_ids
+                that you want to include in the report. Cannot
+                specify both usergroupquery and usergroup."
+    ),
+    optparse::make_option(
+      opt_str = "--usergroupname"
+      , type = "character"
+      , default = character(0)
+      , help = "The name of your custom user group."
     )
   )
-opt_parser <- optparse::OptionParser(option_list = optionList)
+opt_parser <- optparse::OptionParser(option_list = option_list)
 opt <- optparse::parse_args(opt_parser)
 
 # Connect to redshift
 print("Connecting to Redshift ...")
-
 driver <- DBI::dbDriver("PostgreSQL")
 connection <- RPostgreSQL::dbConnect(
                 driver
@@ -116,48 +139,40 @@ date_ranges <- data.frame(
 
 query_types <- paste0(c("au", "pa", "notifications"), "Query")
 
+if (length(opt$usergroupquery) > 0){
+  ugquery0 <- paste(
+               readLines(con = opt$usergroupquery)
+               , collapse = " "
+             )
+  ugquery <- gsub(pattern = ";"
+                  , replacement = ""
+                  , x = ugquery0)
+} else {
+  ugquery <- character(0)
+}
+
 # Run queries and put results into a long data frame.
 print("Fetching results...")
-
-long_flash_report <- flashreport::get_results(date_ranges, query_types)
+long_flash_report <- flashreport::get_results(
+  date_ranges
+  , query_types
+  , user_group = opt$usergroup
+  , user_group_name = opt$usergroupname
+  , user_group_query = ugquery
+)
 
 # Postprocess results.
 print("Processing results...")
-
 long_flash_report_dates_formatted <-
   flashreport::format_LFR_dates(long_flash_report )
 
-long_flash_report_2 <-
-  flashreport::curate_user_groups(long_flash_report_dates_formatted)
-
-long_flash_report_subaggregate <-
-  flashreport::summarise_by_subaggregate(long_flash_report_2)
-
-long_flash_report_isFL <-
-  flashreport::summarise_by_isFL(long_flash_report_2)
-
-long_flash_report_aggregate <-
-  flashreport::summarise_in_aggregate(long_flash_report_2)
-
-long_flash_report_3 <- rbind(long_flash_report_2
-                                 , long_flash_report_subaggregate
-                                 , long_flash_report_isFL
-                                 , long_flash_report_aggregate)
-
-# Calculate WAU percentage for each user group, subaggregate, and aggregate,
-# and for each date range.
+long_flash_report_3 <- rbind(long_flash_report_dates_formatted)
 
 long_flash_report_WAU_pct <-
   flashreport::calculate_WAU_percentage(long_flash_report_3)
 
-# Calculate total actions for each user group, subaggregate, and aggregate,
-# and for each date range.
-
 long_flash_report_total_actions <-
   flashreport::calculate_total_actions(long_flash_report_3)
-
-# Calculate average actions per WAU for each user group, subaggregate
-# , and aggregate, and for each date range.
 
 long_flash_report_actions_per_AU <-
   flashreport::calculate_actions_per_AU(
@@ -165,9 +180,7 @@ long_flash_report_actions_per_AU <-
     , long_flash_report_total_actions
   )
 
-# Calculate notifications_response_rate for each user group,
-# subaggregate, and aggregate, and for each date range.
-
+# Calculate notifications_response_rate. 
 long_flash_report_NRR <-
   flashreport::calculate_NRR(long_flash_report_3)
 
@@ -181,4 +194,5 @@ print("Writing results to file...")
 write.csv(long_flash_report_final
           , file = paste0(opt$outloc, "/", opt$outname, ".csv")
           , row.names = F)
+print("Disconnecting from Redshift...")
 dbDisconnect(redshift_connection$con)

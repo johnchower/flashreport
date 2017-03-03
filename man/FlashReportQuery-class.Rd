@@ -16,6 +16,16 @@ for which results are collected.}
 \item{\code{max_date}}{A Date object, representing the final day of the date ranges
 for which results are collected.}
 
+\item{\code{user_group}}{integer vector of user_ids to restrict results to. Cannot 
+specify both user_group and user_group_query.}
+
+\item{\code{user_group_query}}{Character containing a SQL query that returns a
+table with a single column, user_id. Cannot specify both user_group and
+user_group_query.}
+
+\item{\code{user_group_name}}{Character, a name for the user group you're running 
+the query on.}
+
 \item{\code{query_prototype}}{A character. Represents the SQL query that will return
 the desired results, but the date filters are general, and need to be subbed
 in using the 'substitute_dates' method.}

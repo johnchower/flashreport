@@ -140,4 +140,3 @@ query_user_flash_cat <-
   )
 
 devtools::use_data(query_user_flash_cat, overwrite = T)
-

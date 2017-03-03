@@ -4,7 +4,8 @@
 \alias{get_results}
 \title{A function to perform all queries and dump results into a long data.frame.}
 \usage{
-get_results(date_ranges, query_types)
+get_results(date_ranges, query_types, user_group = integer(0),
+  user_group_query = character(0), user_group_name = character(0))
 }
 \arguments{
 \item{date_ranges}{A data frame with columns range_types, max_dates where
@@ -14,6 +15,16 @@ each row represents a date range.}
 run. Appropriate entries correspond to the names of S4 query type classes
 defined in R/query_functions.r (currently 'auQuery', 'paQuery',
 'notificationsQuery' are the only valid options).}
+
+\item{user_group}{integer vector of user_ids to restrict results to. Cannot 
+specify both user_group and user_group_query.}
+
+\item{user_group_query}{Character containing a SQL query that returns a
+table with a single column, user_id. Cannot specify both user_group and
+user_group_query.}
+
+\item{user_group_name}{Character, a name for the user group you're running 
+the query on.}
 }
 \value{
 A data frame with columns user_group (character), date_range (date

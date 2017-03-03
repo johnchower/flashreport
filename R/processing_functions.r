@@ -6,29 +6,48 @@
 #' run. Appropriate entries correspond to the names of S4 query type classes
 #' defined in R/query_functions.r (currently 'auQuery', 'paQuery',
 #' 'notificationsQuery' are the only valid options).
+#' @param user_group integer vector of user_ids to restrict results to. Cannot 
+#' specify both user_group and user_group_query.
+#' @param user_group_query Character containing a SQL query that returns a
+#' table with a single column, user_id. Cannot specify both user_group and
+#' user_group_query.
+#' @param user_group_name Character, a name for the user group you're running 
+#' the query on.
 #' @return A data frame with columns user_group (character), date_range (date
 #' ending), variable (character), value (numeric).
 #' @importFrom magrittr %>%
 #' @importFrom methods new
 #' @export
-get_results <- function(date_ranges, query_types){
+get_results <- function(date_ranges
+                        , query_types
+                        , user_group = integer(0)
+                        , user_group_query = character(0)
+                        , user_group_name = character(0)){
+  if (length(user_group) != 0
+      & length(user_group_query) != 0){
+    stop("Must specify at most one of user_group or user_group_query.")
+  }
   long_flash_report <- data.frame()
-  for(i in 1:nrow(date_ranges)){
-    for(queryType in query_types){
-      range_i <- date_ranges[i,]
+  for (i in 1:nrow(date_ranges)){
+    for (queryType in query_types){
+      range_i <- date_ranges[i, ]
       maxDate <- range_i$max_dates
       rangeType <- range_i$range_types
       FRQ <- new(Class = queryType
                  , max_date = maxDate
-                 , range_type = rangeType)
-      results <- FRQ %>%
-        {flashreport::get_min_date(.)} %>%
-        {flashreport::get_prototype(.)} %>%
-        {flashreport::substitute_dates(.)} %>%
-        {flashreport::run_query(.)} %>%
-        {flashreport::format_raw_results(.)} %>%
-        {.@final_results}
-      
+                 , range_type = rangeType
+                 , user_group = user_group
+                 , user_group_query = user_group_query
+                 , user_group_name = user_group_name)
+      results0 <- FRQ %>%
+        get_min_date %>%
+        get_prototype %>%
+        substitute_dates %>%
+        substitute_user_group_name %>%
+        run_query %>%
+        format_raw_results
+      results <- results0@final_results
+
       long_flash_report <- rbind(long_flash_report, results)
     }
   }
@@ -80,10 +99,17 @@ curate_user_groups <- function(long_flash_report_dates_formatted){
 #' champions, and internal users).
 #' @return A summarised version of long_flash_report_2. Same column structure,
 #' but fewer rows.
+#' @importFrom dplyr left_join
+#' @importFrom dplyr group_by
+#' @importFrom dplyr summarise
+#' @importFrom dplyr rename
+#' @importFrom dplyr select
+#' @importFrom dplyr filter 
+#' @importFrom dplyr ungroup
 #' @importFrom magrittr %>%
 #' @export
 summarise_by_subaggregate <- function(long_flash_report_2
-                                      , subaggregate_df = 
+                                      , subaggregate_df =
                                           flashreport::subaggregates){
   long_flash_report_2 %>%
     dplyr::left_join(subaggregate_df
@@ -92,7 +118,7 @@ summarise_by_subaggregate <- function(long_flash_report_2
     dplyr::summarise(value = sum(value)) %>%
     dplyr::rename(user_group = subaggregate) %>%
     dplyr::select(user_group, date_range, variable, value) %>%
-    {dplyr::ungroup(.)}
+    ungroup
 }
 
 #' Summarises results by isFL.
@@ -103,10 +129,17 @@ summarise_by_subaggregate <- function(long_flash_report_2
 #' champions, and internal users).
 #' @return A summarised version of long_flash_report_2. Same column structure,
 #' but fewer rows.
+#' @importFrom dplyr left_join
+#' @importFrom dplyr group_by
+#' @importFrom dplyr summarise
+#' @importFrom dplyr rename
+#' @importFrom dplyr select
+#' @importFrom dplyr filter
+#' @importFrom dplyr ungroup
 #' @importFrom magrittr %>%
 #' @export
 summarise_by_isFL <- function(long_flash_report_2
-                                      , isFL_df = 
+                                      , isFL_df =
                                           flashreport::isFL){
   long_flash_report_2 %>%
     dplyr::left_join(isFL_df
@@ -115,8 +148,8 @@ summarise_by_isFL <- function(long_flash_report_2
     dplyr::summarise(value = sum(value)) %>%
     dplyr::rename(user_group = isFL) %>%
     dplyr::select(user_group, date_range, variable, value) %>%
-    dplyr::filter(user_group!="FamilyLife") %>%
-    {dplyr::ungroup(.)}
+    dplyr::filter(user_group != "FamilyLife") %>%
+    ungroup
 }
 
 #' Summarises results in aggregate.
@@ -124,6 +157,11 @@ summarise_by_isFL <- function(long_flash_report_2
 #' @param long_flash_report_2 The result of calling curate_user_groups.
 #' @return A summarised version of long_flash_report_2. Same column structure,
 #' but fewer rows.
+#' @importFrom dplyr group_by
+#' @importFrom dplyr summarise
+#' @importFrom dplyr mutate
+#' @importFrom dplyr select
+#' @importFrom dplyr ungroup
 #' @importFrom magrittr %>%
 #' @export
 summarise_in_aggregate <- function(long_flash_report_2){
@@ -132,7 +170,7 @@ summarise_in_aggregate <- function(long_flash_report_2){
     dplyr::summarise(value = sum(value)) %>%
     dplyr::mutate(user_group = "Total") %>%
     dplyr::select(user_group, date_range, variable, value) %>%
-    {dplyr::ungroup(.)}
+    ungroup
 }
 
 #' Calculate WAU percentage for each user group, subaggregate, and aggregate,
@@ -142,15 +180,19 @@ summarise_in_aggregate <- function(long_flash_report_2){
 #' summarise_by_subaggregate, summarise_in_aggregate, and curate_user_groups.
 #' @return A data frame with the same column structure as the input, but with
 #' additional rows corresponding to the WAU percent variable.
+#' @importFrom dplyr filter
+#' @importFrom reshape2 dcast
+#' @importFrom reshape2 melt
+#' @importFrom dplyr mutate
 #' @importFrom magrittr %>%
 #' @export
 calculate_WAU_percentage <- function(long_flash_report_3){
   long_flash_report_3 %>%
     dplyr::filter(grepl(pattern = "active_user", x = variable)) %>%
     reshape2::dcast(date_range + user_group ~ variable
-                    , value.var = 'value') %>%
+                    , value.var = "value") %>%
     dplyr::mutate(
-      active_users_WAU_pct = active_users_week/active_users_ytd
+      active_users_WAU_pct = active_users_week / active_users_ytd
     ) %>%
     reshape2::melt(id.vars = c("date_range", "user_group")
          , variable.name = "variable"
@@ -165,6 +207,11 @@ calculate_WAU_percentage <- function(long_flash_report_3){
 #' summarise_by_subaggregate, summarise_in_aggregate, and curate_user_groups.
 #' @return A data frame with the same column structure as the input, but with
 #' additional rows corresponding to the total actions variable.
+#' @importFrom dplyr filter
+#' @importFrom dplyr group_by
+#' @importFrom dplyr summarise
+#' @importFrom dplyr mutate
+#' @importFrom dplyr ungroup
 #' @importFrom magrittr %>%
 #' @export
 calculate_total_actions <- function(long_flash_report_3){
@@ -173,7 +220,7 @@ calculate_total_actions <- function(long_flash_report_3){
     dplyr::group_by(date_range, user_group) %>%
     dplyr::summarise(value = sum(value)) %>%
     dplyr::mutate(variable = "platform_actions_total") %>%
-    {dplyr::ungroup(.)}
+    ungroup
 }
 
 #' Calculate average actions per WAU for each user group, subaggregate, 
@@ -185,6 +232,10 @@ calculate_total_actions <- function(long_flash_report_3){
 #' calculate_total_actions.
 #' @return A data frame with the same column structure as the input, but with
 #' additional rows corresponding to the actions_per_AU variable.
+#' @importFrom dplyr filter
+#' @importFrom reshape2 dcast
+#' @importFrom dplyr mutate
+#' @importFrom reshape2 melt
 #' @importFrom magrittr %>%
 #' @export
 calculate_actions_per_AU <- function(long_flash_report_3
@@ -194,10 +245,10 @@ calculate_actions_per_AU <- function(long_flash_report_3
     dplyr::filter(variable == "platform_actions_total"
            | variable == "active_users_week") %>%
     reshape2::dcast(date_range + user_group ~ variable
-                    , value.var = 'value') %>%
+                    , value.var = "value") %>%
     dplyr::mutate(
-      platform_actions_per_active_user 
-        = platform_actions_total/active_users_week
+      platform_actions_per_active_user
+        = platform_actions_total / active_users_week
     ) %>%
     reshape2::melt(id.vars = c("date_range", "user_group")
          , variable.name = "variable"
@@ -212,6 +263,11 @@ calculate_actions_per_AU <- function(long_flash_report_3
 #' summarise_by_subaggregate, summarise_in_aggregate, and curate_user_groups.
 #' @return A data frame with the same column structure as the input, but with
 #' additional rows corresponding to the notifications_response_rate variable.
+#' @importFrom dplyr filter
+#' @importFrom dplyr group_by
+#' @importFrom dplyr mutate
+#' @importFrom dplyr ungroup
+#' @importFrom dplyr select
 #' @importFrom magrittr %>%
 #' @export
 calculate_NRR <- function(long_flash_report_3){
@@ -220,8 +276,11 @@ calculate_NRR <- function(long_flash_report_3){
     dplyr::group_by(date_range, user_group) %>%
     dplyr::mutate(notifications_events_total = sum(value)) %>%
     dplyr::filter(variable == "notifications_Read") %>%
-    {dplyr::ungroup(.)} %>%
-    dplyr::mutate(notifications_response_rate = value/notifications_events_total) %>%
-    dplyr::select(user_group, date_range, value = notifications_response_rate) %>%
+    ungroup %>%
+    dplyr::mutate(notifications_response_rate =
+                    value / notifications_events_total) %>%
+    dplyr::select(user_group
+                  , date_range
+                  , value = notifications_response_rate) %>%
     dplyr::mutate(variable = "notifications_response_rate")
 }
