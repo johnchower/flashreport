@@ -47,7 +47,7 @@ optionList <-   list(
       , type = "character"
       , default = "2016-01-01"
       , help = "The date at which active users start getting counted.
-        Anyone who did not have a session before this date is excluded
+        Anyone who did not have a session after this date is excluded
         from the analysis."
     ),
     optparse::make_option(
