@@ -30,6 +30,14 @@
 #' @format string
 "query_user_flash_cat"
 
+#' A primitive version fo query_user_flash_cat that contains a string
+#' xyz_gloo_internal_email_xyz which can be subbed out for a given list of
+#' email addresses.
+#'
+#' @format string
+"query_user_flash_cat_sub"
+
+
 #' A generic query to create a temporary table in Redshift that matches
 #' platform actions to their Flash Report Categories.
 #'
