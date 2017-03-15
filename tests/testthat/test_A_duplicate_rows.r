@@ -1,3 +1,4 @@
+print("Running test_A_duplicate_rows.r")
 library(RPostgreSQL)
 library(dplyr)
 
@@ -37,4 +38,11 @@ test_that("user_flash_cat returns one flash report category per user.", {
                , expected = 0)
 })
 
+object_to_test <- RPostgreSQL::dbGetQuery(conn = redshift_connection$con
+                        , statement = "SELECT * FROM pa_flash_cat")
+test_that("pa_flash_cat returns results.", {
+  expect_is(object_to_test, "data.frame")
+  expect_gt(object = nrow(object_to_test)
+            , expected = 0)
+})
 RPostgreSQL::dbDisconnect(conn = redshift_connection$con)

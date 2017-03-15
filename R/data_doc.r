@@ -43,3 +43,14 @@
 #'
 #' @format string
 "query_pa_flash_cat"
+
+#' A helper query to initialize the pa_flash_cat temporary table
+#'
+#' @format string
+"query_pa_flash_cat_initialize"
+
+#' A helper query to insert the proper values into the pa_flash_cat temporary
+#' table.
+#'
+#' @format string
+"query_pa_flash_cat_insert"
