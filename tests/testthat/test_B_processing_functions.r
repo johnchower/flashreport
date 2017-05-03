@@ -1,3 +1,4 @@
+print("Running test_B_processing_functions.r")
 library(RPostgreSQL)
 
 # Connect to redshift
@@ -64,7 +65,6 @@ test_that("get_results returns results.", {
                             , "Family Bridges"
                             , "Business As Unusual"
                             , "Stadia"
-                            , "Guest"
                             , NA
                             )
   expect_equal(user_groups_to_test[order(user_groups_to_test)]
@@ -123,7 +123,6 @@ test_that("format_LFR_dates does its job", {
                             , "Family Bridges"
                             , "Business As Unusual"
                             , "Stadia"
-                            , "Guest"
                             , NA
                             )
   expect_equal(user_groups_to_test[order(user_groups_to_test)]

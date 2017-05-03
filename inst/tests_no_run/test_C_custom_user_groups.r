@@ -1,3 +1,4 @@
+print("Running test_C_custom_user_groups.r")
 library(RPostgreSQL)
 library(dplyr)
 
@@ -36,7 +37,7 @@ query_types <- paste0(c("au", "pa", "notifications"), "Query")
 
 user_group_test <- 1:50
 user_group_query_test <-
-  paste0("SELECT ud.id AS user_id FROM user_dimensions ud WHERE ud.id IN ("
+  paste0("SELECT DISTINCT ud.id AS user_id FROM user_dimensions ud WHERE ud.id IN ("
          , paste(user_group_test, collapse = ",")
          , ")")
 user_group_name_test <- "users_1_50"
