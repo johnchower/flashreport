@@ -1,4 +1,4 @@
-print("Running test_C_custom_user_groups.r")
+cat("\nRunning test_C_custom_user_groups.r\n")
 library(RPostgreSQL)
 library(dplyr)
 
@@ -35,7 +35,7 @@ date_ranges <- data.frame(
 
 query_types <- paste0(c("au", "pa", "notifications"), "Query")
 
-user_group_test <- 1:50
+user_group_test <- 1:500
 user_group_query_test <-
   paste0("SELECT DISTINCT ud.id AS user_id FROM user_dimensions ud WHERE ud.id IN ("
          , paste(user_group_test, collapse = ",")
@@ -91,6 +91,10 @@ test_that("get_results returns correctly filtered results when user_group
                , expected_user_groups[order(expected_user_groups)])
   variables_to_test <- unique(object_to_test$variable)
   expected_variables <- base_variables
+  cat("\nVariables to test\n")
+  print(variables_to_test[order(variables_to_test)])
+  cat("\nExpected variables\n")
+  print(expected_variables[order(expected_variables)])
   expect_equal(variables_to_test[order(variables_to_test)]
                , expected_variables[order(expected_variables)])
   expected_active_users_ytd <- length(unique(user_group_test))
